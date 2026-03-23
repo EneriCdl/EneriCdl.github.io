@@ -1,29 +1,34 @@
-﻿const STORAGE_KEY = 'enericdl_articles_v1';
+﻿const DEFAULT_OWNER = 'EneriCdl';
+const DEFAULT_REPO = 'EneriCdl.github.io';
+const DEFAULT_BRANCH = 'main';
+const DEFAULT_PATH = 'articles.json';
+
+let articles = [];
 
 function uid() {
   return `id_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 }
 
-function readArticles() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return [];
+function getToday() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+async function fetchArticlesFromRepo() {
   try {
-    const parsed = JSON.parse(raw);
+    const response = await fetch(`./${DEFAULT_PATH}`, { cache: 'no-store' });
+    if (!response.ok) return [];
+    const parsed = await response.json();
     return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
 }
 
-function saveArticles(articles) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(articles));
-}
-
 function resetForm() {
   const form = document.querySelector('#articleForm');
   form.reset();
   document.querySelector('#articleId').value = '';
-  document.querySelector('#date').value = new Date().toISOString().slice(0, 10);
+  document.querySelector('#date').value = getToday();
   document.querySelector('#formTitle').textContent = '新建文章';
 }
 
@@ -33,7 +38,7 @@ function fillForm(article) {
   document.querySelector('#summary').value = article.summary || '';
   document.querySelector('#content').value = article.content || '';
   document.querySelector('#tags').value = Array.isArray(article.tags) ? article.tags.join(', ') : '';
-  document.querySelector('#date').value = article.updatedAt || new Date().toISOString().slice(0, 10);
+  document.querySelector('#date').value = article.updatedAt || getToday();
   document.querySelector('#status').value = article.status || 'draft';
   document.querySelector('#formTitle').textContent = '编辑文章';
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -41,14 +46,14 @@ function fillForm(article) {
 
 function renderList() {
   const list = document.querySelector('#manageList');
-  const articles = readArticles().sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+  const sorted = [...articles].sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
 
-  if (!articles.length) {
+  if (!sorted.length) {
     list.innerHTML = '<p class="empty">暂无文章，先创建第一篇。</p>';
     return;
   }
 
-  list.innerHTML = articles
+  list.innerHTML = sorted
     .map((article) => {
       const statusText = article.status === 'published' ? '已发布' : '草稿';
       const summary = article.summary || article.content || '';
@@ -73,16 +78,99 @@ function renderList() {
 }
 
 function upsertArticle(payload) {
-  const articles = readArticles();
-  const idx = articles.findIndex((item) => item.id === payload.id);
-
-  if (idx >= 0) {
-    articles[idx] = payload;
+  const index = articles.findIndex((item) => item.id === payload.id);
+  if (index >= 0) {
+    articles[index] = payload;
   } else {
     articles.push(payload);
   }
+}
 
-  saveArticles(articles);
+function utf8ToBase64(text) {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary);
+}
+
+async function getContentSha(owner, repo, path, branch, token) {
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${encodeURIComponent(branch)}`;
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json'
+    }
+  });
+
+  if (response.status === 404) return '';
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`读取远程文件失败: ${response.status} ${errText}`);
+  }
+
+  const data = await response.json();
+  return data.sha || '';
+}
+
+async function publishToGitHub() {
+  const statusEl = document.querySelector('#publishStatus');
+  const owner = document.querySelector('#owner').value.trim() || DEFAULT_OWNER;
+  const repo = document.querySelector('#repo').value.trim() || DEFAULT_REPO;
+  const branch = document.querySelector('#branch').value.trim() || DEFAULT_BRANCH;
+  const path = document.querySelector('#path').value.trim() || DEFAULT_PATH;
+  const token = document.querySelector('#token').value.trim();
+
+  if (!token) {
+    statusEl.textContent = '请先填入 GitHub Token。';
+    return;
+  }
+
+  statusEl.textContent = '正在发布到 GitHub...';
+
+  try {
+    const sha = await getContentSha(owner, repo, path, branch, token);
+    const content = JSON.stringify(articles, null, 2);
+    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+
+    const body = {
+      message: `update articles: ${new Date().toISOString()}`,
+      content: utf8ToBase64(content),
+      branch
+    };
+
+    if (sha) body.sha = sha;
+
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`发布失败: ${response.status} ${errText}`);
+    }
+
+    statusEl.textContent = '发布成功。约 1-2 分钟后首页会更新。';
+  } catch (error) {
+    statusEl.textContent = String(error.message || error);
+  }
+}
+
+function downloadBackup() {
+  const blob = new Blob([JSON.stringify(articles, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'articles.json';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 document.querySelector('#articleForm').addEventListener('submit', (event) => {
@@ -109,6 +197,8 @@ document.querySelector('#articleForm').addEventListener('submit', (event) => {
 });
 
 document.querySelector('#resetBtn').addEventListener('click', () => resetForm());
+document.querySelector('#publishBtn').addEventListener('click', () => publishToGitHub());
+document.querySelector('#downloadBtn').addEventListener('click', () => downloadBackup());
 
 document.querySelector('#manageList').addEventListener('click', (event) => {
   const btn = event.target.closest('button[data-action]');
@@ -119,7 +209,6 @@ document.querySelector('#manageList').addEventListener('click', (event) => {
 
   const action = btn.getAttribute('data-action');
   const id = item.getAttribute('data-id');
-  const articles = readArticles();
   const target = articles.find((article) => article.id === id);
   if (!target) return;
 
@@ -130,17 +219,20 @@ document.querySelector('#manageList').addEventListener('click', (event) => {
 
   if (action === 'toggle') {
     target.status = target.status === 'published' ? 'draft' : 'published';
-    saveArticles(articles);
     renderList();
     return;
   }
 
   if (action === 'delete') {
-    const next = articles.filter((article) => article.id !== id);
-    saveArticles(next);
+    articles = articles.filter((article) => article.id !== id);
     renderList();
   }
 });
 
-resetForm();
-renderList();
+async function init() {
+  articles = await fetchArticlesFromRepo();
+  resetForm();
+  renderList();
+}
+
+init();

@@ -156,7 +156,14 @@ textarea {
   padding: 0 12px;
 }
 
-.empty {
+.empty,
+.tip {
   margin: 0;
   color: var(--muted);
+}
+
+code {
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #f8efe5;
 }

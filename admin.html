@@ -43,10 +43,37 @@
         </select>
 
         <div class="form-actions">
-          <button type="submit" class="btn primary">保存文章</button>
+          <button type="submit" class="btn primary">保存到草稿区</button>
           <button type="button" id="resetBtn" class="btn ghost">清空表单</button>
         </div>
       </form>
+    </section>
+
+    <section class="panel">
+      <h2>发布设置</h2>
+      <p class="tip">点击“发布到 GitHub”后会更新仓库中的 <code>articles.json</code>，所有人都能在你的网站看到最新文章。</p>
+      <div class="form">
+        <label for="owner">GitHub 用户名</label>
+        <input id="owner" value="EneriCdl" />
+
+        <label for="repo">仓库名</label>
+        <input id="repo" value="EneriCdl.github.io" />
+
+        <label for="branch">分支</label>
+        <input id="branch" value="main" />
+
+        <label for="path">文章文件路径</label>
+        <input id="path" value="articles.json" />
+
+        <label for="token">GitHub Token（不会落盘保存）</label>
+        <input id="token" type="password" placeholder="粘贴具有 Contents 写入权限的 Token" />
+
+        <div class="form-actions">
+          <button type="button" id="publishBtn" class="btn primary">发布到 GitHub</button>
+          <button type="button" id="downloadBtn" class="btn ghost">下载 JSON 备份</button>
+        </div>
+        <p id="publishStatus" class="tip"></p>
+      </div>
     </section>
 
     <section class="panel">
