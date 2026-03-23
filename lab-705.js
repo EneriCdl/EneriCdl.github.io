@@ -1,4 +1,5 @@
 ﻿const ADMIN_PASSWORD = ['dsxx', '705', 'xzh'].join('');
+const TOKEN_STORAGE_KEY = ['lab', '705', 'token'].join('_');
 
 let articles = [];
 
@@ -113,7 +114,9 @@ async function publishToGitHub() {
   const repo = document.querySelector('#repo').value.trim();
   const branch = document.querySelector('#branch').value.trim();
   const path = document.querySelector('#path').value.trim();
-  const token = document.querySelector('#token').value.trim();
+  const tokenInput = document.querySelector('#token');
+  const rememberToken = document.querySelector('#rememberToken');
+  const token = tokenInput.value.trim() || localStorage.getItem(TOKEN_STORAGE_KEY) || '';
   const statusEl = document.querySelector('#publishStatus');
 
   if (!token) {
@@ -148,6 +151,10 @@ async function publishToGitHub() {
     if (!response.ok) {
       const text = await response.text();
       throw new Error(`发布失败: ${response.status} ${text}`);
+    }
+
+    if (rememberToken && rememberToken.checked) {
+      localStorage.setItem(TOKEN_STORAGE_KEY, token);
     }
 
     statusEl.textContent = '发布成功。约 1-2 分钟后生效。';
@@ -189,6 +196,11 @@ function bindAppEvents() {
   document.querySelector('#resetBtn').addEventListener('click', () => resetForm());
   document.querySelector('#publishBtn').addEventListener('click', () => publishToGitHub());
   document.querySelector('#downloadBtn').addEventListener('click', () => downloadJson());
+  document.querySelector('#clearTokenBtn').addEventListener('click', () => {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    document.querySelector('#token').value = '';
+    document.querySelector('#publishStatus').textContent = '已清除本机已记住 Token。';
+  });
 
   document.querySelector('#manageList').addEventListener('click', (event) => {
     const btn = event.target.closest('button[data-action]');
@@ -226,6 +238,10 @@ async function unlock() {
   document.querySelector('#app').classList.remove('hidden');
   bindAppEvents();
   resetForm();
+  const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+  if (savedToken) {
+    document.querySelector('#token').value = savedToken;
+  }
   renderList();
 }
 

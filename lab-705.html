@@ -79,10 +79,15 @@
 
           <label for="token">GitHub Token（不会保存）</label>
           <input id="token" type="password" placeholder="需要 Contents: Read and write" />
+          <label class="inline-check">
+            <input id="rememberToken" type="checkbox" checked />
+            <span>记住 Token（当前浏览器）</span>
+          </label>
 
           <div class="form-actions">
             <button type="button" id="publishBtn" class="btn primary">发布到 GitHub</button>
             <button type="button" id="downloadBtn" class="btn ghost">下载 JSON</button>
+            <button type="button" id="clearTokenBtn" class="btn ghost">清除已记住 Token</button>
           </div>
           <p id="publishStatus" class="tip"></p>
         </div>
