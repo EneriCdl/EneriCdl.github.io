@@ -188,6 +188,32 @@ function collectSiteConfigFromForm() {
   };
 }
 
+function setPreviewText(id, value) {
+  const el = document.querySelector(`#${id}`);
+  if (!el) return;
+  el.textContent = value || '-';
+}
+
+function renderConfigPreview() {
+  const cfg = collectSiteConfigFromForm();
+
+  setPreviewText('pvProjectTitle1', cfg.projects[0]?.title || '');
+  setPreviewText('pvProjectDesc1', cfg.projects[0]?.desc || '');
+  setPreviewText('pvProjectTitle2', cfg.projects[1]?.title || '');
+  setPreviewText('pvProjectDesc2', cfg.projects[1]?.desc || '');
+  setPreviewText('pvProjectTitle3', cfg.projects[2]?.title || '');
+  setPreviewText('pvProjectDesc3', cfg.projects[2]?.desc || '');
+
+  setPreviewText('pvAboutTitle', cfg.about.title || '');
+  setPreviewText('pvAboutText1', cfg.about.text1 || '');
+  setPreviewText('pvAboutText2', cfg.about.text2 || '');
+
+  setPreviewText('pvTimelineTitle', cfg.timeline.title || '');
+  setPreviewText('pvTimelineItem1', `${cfg.timeline.items[0]?.bus || 'BUS-1'} ${cfg.timeline.items[0]?.text || ''}`.trim());
+  setPreviewText('pvTimelineItem2', `${cfg.timeline.items[1]?.bus || 'BUS-2'} ${cfg.timeline.items[1]?.text || ''}`.trim());
+  setPreviewText('pvTimelineItem3', `${cfg.timeline.items[2]?.bus || 'BUS-3'} ${cfg.timeline.items[2]?.text || ''}`.trim());
+}
+
 function utf8ToBase64(text) {
   const bytes = new TextEncoder().encode(text);
   let binary = '';
@@ -312,6 +338,7 @@ function bindAppEvents() {
   document.querySelector('#publishBtn').addEventListener('click', () => publishToGitHub());
   document.querySelector('#downloadBtn').addEventListener('click', () => downloadJson());
   document.querySelector('#downloadConfigBtn').addEventListener('click', () => downloadConfigJson());
+  document.querySelector('#refreshPreviewBtn').addEventListener('click', () => renderConfigPreview());
   document.querySelector('#clearTokenBtn').addEventListener('click', () => {
     localStorage.removeItem(TOKEN_STORAGE_KEY);
     document.querySelector('#token').value = '';
@@ -346,6 +373,19 @@ function bindAppEvents() {
       renderList();
     }
   });
+
+  const configIds = [
+    'projectTitle1', 'projectDesc1',
+    'projectTitle2', 'projectDesc2',
+    'projectTitle3', 'projectDesc3',
+    'aboutTitle', 'aboutText1', 'aboutText2',
+    'timelineTitle', 'timelineItem1', 'timelineItem2', 'timelineItem3'
+  ];
+  configIds.forEach((id) => {
+    const el = document.querySelector(`#${id}`);
+    if (!el) return;
+    el.addEventListener('input', () => renderConfigPreview());
+  });
 }
 
 async function unlock() {
@@ -358,6 +398,7 @@ async function unlock() {
   bindAppEvents();
   resetForm();
   fillSiteConfigForm(siteConfig);
+  renderConfigPreview();
 
   const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
   if (savedToken) {
