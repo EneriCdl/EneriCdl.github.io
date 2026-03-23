@@ -3,86 +3,111 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EneriCdl · Web</title>
+  <title>EneriCdl · Embedded Log</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <div class="bg-shape bg-shape-a" aria-hidden="true"></div>
-  <div class="bg-shape bg-shape-b" aria-hidden="true"></div>
+  <div class="circuit-overlay" aria-hidden="true"></div>
+  <div class="noise-overlay" aria-hidden="true"></div>
 
   <main class="page">
     <section class="hero" id="top">
-      <nav class="quick-nav" aria-label="页面导航">
-        <a class="quick-item" href="#projects">
-          <span class="quick-title">作品</span>
-          <span class="quick-sub">学习方向</span>
-        </a>
-        <a class="quick-item" href="#about">
-          <span class="quick-title">关于我</span>
-          <span class="quick-sub">个人介绍</span>
-        </a>
-        <a class="quick-item" href="#timeline">
-          <span class="quick-title">路线</span>
-          <span class="quick-sub">阶段计划</span>
-        </a>
-        <a class="quick-item" href="#articles">
-          <span class="quick-title">文章</span>
-          <span class="quick-sub">深度阅读</span>
-        </a>
-      </nav>
+      <div class="hero-shell">
+        <nav class="bus-nav" aria-label="页面导航">
+          <a class="bus-item" href="#projects"><span>01</span> 作品仓</a>
+          <a class="bus-item" href="#about"><span>02</span> 身份卡</a>
+          <a class="bus-item" href="#timeline"><span>03</span> 学习总线</a>
+          <a class="bus-item" href="#articles"><span>04</span> 文章阵列</a>
+        </nav>
 
-      <h1>我是 EneriCdl，<br>持续记录嵌入式学习与项目成长。</h1>
-      <p class="lead">
-        五邑大学大一学生，专注 C 语言与 STM32。这里会长期更新实验记录、调试笔记和项目复盘。
-        邮箱：<a href="mailto:807800242@qq.com">807800242@qq.com</a>
-      </p>
-
-      <div class="actions">
-        <a class="btn btn-primary" href="#articles">开始阅读</a>
-        <a class="btn btn-ghost" href="mailto:807800242@qq.com">联系我</a>
+        <div class="hero-core">
+          <p class="chip-mark">ENERICDL.CHIP.NODE</p>
+          <h1>嵌入式学习主控台<br>持续点亮每一次实验</h1>
+          <p class="lead">
+            五邑大学大一学生，主攻 C 语言与 STM32。这个页面是我的“芯片日志板”，记录代码、硬件和调试成长。
+            邮箱：<a href="mailto:807800242@qq.com">807800242@qq.com</a>
+          </p>
+          <div class="actions">
+            <a class="btn btn-primary" href="#articles">进入文章阵列</a>
+            <a class="btn btn-ghost" href="mailto:807800242@qq.com">发我邮件</a>
+          </div>
+        </div>
       </div>
+    </section>
+
+    <section class="widgets" id="labs" aria-label="小组件">
+      <article class="widget meter-widget">
+        <h2>功率监测</h2>
+        <p class="widget-sub">模拟板载功率波动</p>
+        <p class="power-num"><span id="powerValue">0</span>W</p>
+        <div class="power-track"><i id="powerBar"></i></div>
+      </article>
+
+      <article class="widget clock-widget">
+        <h2>系统时钟</h2>
+        <p class="widget-sub">控制台当前时间</p>
+        <p id="liveClock" class="clock-time">--:--:--</p>
+        <p id="liveDate" class="clock-date">----</p>
+      </article>
+
+      <article class="widget terminal-widget">
+        <h2>调试流</h2>
+        <p class="widget-sub">最近信号记录</p>
+        <ul id="logStream" class="log-stream"></ul>
+      </article>
+
+      <article class="widget switch-widget">
+        <h2>信号开关</h2>
+        <p class="widget-sub">切换系统状态</p>
+        <div class="switch-row">
+          <button class="sig-btn active" type="button" data-signal="uart">UART</button>
+          <button class="sig-btn" type="button" data-signal="adc">ADC</button>
+          <button class="sig-btn" type="button" data-signal="pwm">PWM</button>
+        </div>
+        <p id="signalState" class="signal-state">当前激活：UART</p>
+      </article>
     </section>
 
     <section id="projects" class="cards" aria-label="作品分区">
       <article class="card">
         <h2>C 语言学习记录</h2>
-        <p>整理语法基础、指针、数组、数据结构与常见算法练习过程。</p>
+        <p>语法、指针、数组、数据结构、算法练习，按阶段沉淀可复查笔记。</p>
       </article>
       <article class="card">
         <h2>STM32 嵌入式学习记录</h2>
-        <p>记录外设驱动、定时器、中断、串口通信与调试思路。</p>
+        <p>聚焦 GPIO、定时器、中断、串口通信与驱动调试流程。</p>
       </article>
       <article class="card">
-        <h2>项目实战与总结</h2>
-        <p>沉淀每个实验和小项目中的问题、方案、优化与复盘。</p>
+        <h2>项目实战与复盘</h2>
+        <p>每个小项目输出问题清单、解决路径、优化版本与经验总结。</p>
       </article>
     </section>
 
     <section class="panel" id="about">
       <h2>关于我</h2>
-      <p>目前专注于 C 语言与 STM32 嵌入式方向学习，计划通过持续写作把每一次实验、调试和踩坑经验沉淀成可复用的方法。</p>
-      <p>目标是逐步形成自己的技术体系：从基础语法到工程实践，再到完整项目实现。</p>
+      <p>我把网页当作一个数字化实验台：每写完一个模块，就补一篇记录；每踩一次坑，就沉淀一套排查路径。</p>
+      <p>目标是把“会做”逐步升级到“能讲清、能复用、能迁移”。</p>
     </section>
 
     <section class="panel" id="timeline">
-      <h2>学习路线</h2>
+      <h2>学习总线</h2>
       <ul class="timeline-list">
-        <li><span>阶段 1</span> C 语言基础、指针与数据结构</li>
-        <li><span>阶段 2</span> STM32 外设驱动与中断机制</li>
-        <li><span>阶段 3</span> 项目整合、性能优化与复盘</li>
+        <li><span>BUS-1</span> C 语言基础 + 指针与内存模型</li>
+        <li><span>BUS-2</span> STM32 外设驱动 + 中断通信</li>
+        <li><span>BUS-3</span> 项目整合 + 性能优化 + 文档化复盘</li>
       </ul>
     </section>
 
     <section class="panel" id="articles">
       <div class="panel-head">
-        <h2>文章</h2>
+        <h2>文章阵列</h2>
         <span class="text-link">点击卡片进入详情页阅读全文</span>
       </div>
       <div class="article-tools">
-        <input id="articleSearch" class="search-input" type="search" placeholder="搜索标题、摘要、正文..." />
+        <input id="articleSearch" class="search-input" type="search" placeholder="检索标题、摘要、正文、标签" />
         <div id="tagFilters" class="tag-filters" aria-label="标签筛选"></div>
       </div>
       <div id="articleList" class="article-list"></div>
@@ -90,7 +115,7 @@
     </section>
 
     <footer class="footer">
-      <a href="#top">回到顶部</a>
+      <a href="#top">返回控制台顶部</a>
       <a href="mailto:807800242@qq.com">807800242@qq.com</a>
     </footer>
   </main>

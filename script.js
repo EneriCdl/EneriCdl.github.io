@@ -164,7 +164,74 @@ function bindArticleInteractions() {
   }
 }
 
-const revealSeq = ['.hero', '#projects', '#about', '#timeline', '#articles', '.footer'];
+function initWidgets() {
+  const powerValue = document.querySelector('#powerValue');
+  const powerBar = document.querySelector('#powerBar');
+  const liveClock = document.querySelector('#liveClock');
+  const liveDate = document.querySelector('#liveDate');
+  const logStream = document.querySelector('#logStream');
+  const sigButtons = document.querySelectorAll('.sig-btn');
+  const signalState = document.querySelector('#signalState');
+
+  if (powerValue && powerBar) {
+    setInterval(() => {
+      const next = Math.round(45 + Math.random() * 38 + Math.sin(Date.now() / 1000) * 12);
+      const safeValue = Math.max(0, Math.min(next, 100));
+      powerValue.textContent = String(safeValue);
+      powerBar.style.width = `${safeValue}%`;
+    }, 620);
+  }
+
+  if (liveClock && liveDate) {
+    const updateClock = () => {
+      const now = new Date();
+      liveClock.textContent = now.toLocaleTimeString('zh-CN', { hour12: false });
+      liveDate.textContent = now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    };
+    updateClock();
+    setInterval(updateClock, 1000);
+  }
+
+  if (logStream) {
+    const baseLogs = [
+      'UART RX stable @ 115200',
+      'ADC sample captured: CH2',
+      'PWM duty adjusted to 42%',
+      'I2C bus scan complete',
+      'ISR tick synced',
+      'DMA transfer pass'
+    ];
+
+    const renderLogLine = (text) => {
+      const line = document.createElement('li');
+      const stamp = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+      line.textContent = `[${stamp}] ${text}`;
+      logStream.prepend(line);
+      while (logStream.children.length > 6) {
+        logStream.removeChild(logStream.lastChild);
+      }
+    };
+
+    baseLogs.slice(0, 4).forEach((line) => renderLogLine(line));
+    setInterval(() => {
+      const next = baseLogs[Math.floor(Math.random() * baseLogs.length)];
+      renderLogLine(next);
+    }, 2600);
+  }
+
+  if (sigButtons.length && signalState) {
+    sigButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        sigButtons.forEach((node) => node.classList.remove('active'));
+        btn.classList.add('active');
+        const next = btn.getAttribute('data-signal') || 'UART';
+        signalState.textContent = `当前激活：${next.toUpperCase()}`;
+      });
+    });
+  }
+}
+
+const revealSeq = ['.hero', '.widgets', '#projects', '#about', '#timeline', '#articles', '.footer'];
 revealSeq.forEach((selector, i) => {
   const el = document.querySelector(selector);
   if (!el) return;
@@ -198,4 +265,5 @@ loadArticles().then((articles) => {
   renderTagFilters();
   bindArticleInteractions();
   renderArticles();
+  initWidgets();
 });
