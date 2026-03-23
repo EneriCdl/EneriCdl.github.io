@@ -13,7 +13,9 @@ const state = {
   filtered: [],
   page: 1,
   keyword: '',
-  tag: 'all'
+  tag: 'all',
+  loading: true,
+  error: ''
 };
 
 const defaultSiteConfig = {
@@ -36,21 +38,6 @@ const defaultSiteConfig = {
     ]
   }
 };
-
-async function loadSiteConfig() {
-  try {
-    const response = await fetch(`./site-config.json?v=${Date.now()}`, { cache: 'no-store' });
-    if (!response.ok) return defaultSiteConfig;
-    const parsed = await response.json();
-    return {
-      projects: Array.isArray(parsed.projects) ? parsed.projects : defaultSiteConfig.projects,
-      about: parsed.about || defaultSiteConfig.about,
-      timeline: parsed.timeline || defaultSiteConfig.timeline
-    };
-  } catch {
-    return defaultSiteConfig;
-  }
-}
 
 function setText(id, value) {
   const el = document.querySelector(`#${id}`);
@@ -99,24 +86,41 @@ function normalizeArticles(data) {
     }));
 }
 
-async function loadArticles() {
+async function fetchJsonWithTimeout(url, timeoutMs = 8000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(`./articles.json?v=${Date.now()}`, { cache: 'no-store' });
-    if (!response.ok) return [];
-    const parsed = await response.json();
-    return normalizeArticles(parsed);
-  } catch {
-    return [];
+    const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
+  } finally {
+    clearTimeout(timer);
   }
+}
+
+async function loadSiteConfig() {
+  try {
+    const parsed = await fetchJsonWithTimeout(`./site-config.json?v=${Date.now()}`);
+    return {
+      projects: Array.isArray(parsed.projects) ? parsed.projects : defaultSiteConfig.projects,
+      about: parsed.about || defaultSiteConfig.about,
+      timeline: parsed.timeline || defaultSiteConfig.timeline
+    };
+  } catch {
+    return defaultSiteConfig;
+  }
+}
+
+async function loadArticles() {
+  const parsed = await fetchJsonWithTimeout(`./articles.json?v=${Date.now()}`);
+  return normalizeArticles(parsed);
 }
 
 function getFilteredArticles() {
   const keyword = state.keyword.trim().toLowerCase();
-
   return state.allPublished.filter((item) => {
     const tagOk = state.tag === 'all' || item.tags.includes(state.tag);
     if (!tagOk) return false;
-
     if (!keyword) return true;
     const text = `${item.title} ${item.summary} ${item.content} ${item.tags.join(' ')}`.toLowerCase();
     return text.includes(keyword);
@@ -157,10 +161,25 @@ function renderPager(totalItems) {
 
 function renderArticles() {
   const list = document.querySelector('#articleList');
+  const count = document.querySelector('#articleCount');
   if (!list) return;
+
+  if (state.loading) {
+    list.innerHTML = '<p class="empty">正在加载文章...</p>';
+    if (count) count.textContent = '加载中...';
+    return;
+  }
+
+  if (state.error) {
+    list.innerHTML = `<p class="empty">加载失败：${escapeHtml(state.error)}</p>`;
+    if (count) count.textContent = '加载失败';
+    return;
+  }
 
   state.filtered = getFilteredArticles();
   renderPager(state.filtered.length);
+
+  if (count) count.textContent = `共 ${state.filtered.length} 篇匹配`;
 
   if (!state.filtered.length) {
     list.innerHTML = '<p class="empty">没有匹配结果，试试更换关键词或标签。</p>';
@@ -175,9 +194,8 @@ function renderArticles() {
       const tags = item.tags.length ? `#${item.tags.join(' #')}` : '#未分类';
       const cover = item.cover || 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=80';
       const href = `./article.html?id=${encodeURIComponent(item.id)}`;
-
       return `
-      <a class="article-card" href="${href}">
+      <a class="article-card" href="${href}" aria-label="阅读 ${escapeHtml(item.title)}">
         <img class="article-cover" src="${escapeHtml(cover)}" alt="${escapeHtml(item.title)}" loading="lazy" />
         <div class="article-body">
           <p class="article-meta">${escapeHtml(item.updatedAt || '未设置日期')} · ${escapeHtml(tags)}</p>
@@ -189,15 +207,39 @@ function renderArticles() {
     .join('');
 }
 
+function debounce(fn, wait = 180) {
+  let timer = null;
+  return (...args) => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), wait);
+  };
+}
+
 function bindArticleInteractions() {
   const searchInput = document.querySelector('#articleSearch');
   const tagFilters = document.querySelector('#tagFilters');
   const pager = document.querySelector('#articlePager');
+  const resetBtn = document.querySelector('#resetFiltersBtn');
 
   if (searchInput) {
-    searchInput.addEventListener('input', (event) => {
-      state.keyword = event.target.value || '';
+    const onSearch = debounce((value) => {
+      state.keyword = value || '';
       state.page = 1;
+      renderArticles();
+    });
+
+    searchInput.addEventListener('input', (event) => {
+      onSearch(event.target.value || '');
+    });
+  }
+
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      state.keyword = '';
+      state.tag = 'all';
+      state.page = 1;
+      if (searchInput) searchInput.value = '';
+      renderTagFilters();
       renderArticles();
     });
   }
@@ -226,8 +268,16 @@ function bindArticleInteractions() {
       else state.page = Number(value) || 1;
 
       renderArticles();
+      window.scrollTo({ top: document.querySelector('#articles')?.offsetTop || 0, behavior: 'smooth' });
     });
   }
+}
+
+function setSystemStatus(text, isWarn = false) {
+  const target = document.querySelector('#sysStatus');
+  if (!target) return;
+  target.textContent = text;
+  target.style.color = isWarn ? 'var(--warn)' : 'var(--accent-2)';
 }
 
 function initWidgets() {
@@ -239,51 +289,73 @@ function initWidgets() {
   const sigButtons = document.querySelectorAll('.sig-btn');
   const signalState = document.querySelector('#signalState');
 
-  if (powerValue && powerBar) {
-    setInterval(() => {
-      const next = Math.round(45 + Math.random() * 38 + Math.sin(Date.now() / 1000) * 12);
-      const safeValue = Math.max(0, Math.min(next, 100));
-      powerValue.textContent = String(safeValue);
-      powerBar.style.width = `${safeValue}%`;
-    }, 620);
-  }
+  let powerTimer = null;
+  let clockTimer = null;
+  let logTimer = null;
 
-  if (liveClock && liveDate) {
-    const updateClock = () => {
-      const now = new Date();
-      liveClock.textContent = now.toLocaleTimeString('zh-CN', { hour12: false });
-      liveDate.textContent = now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
-    };
-    updateClock();
-    setInterval(updateClock, 1000);
-  }
+  const baseLogs = [
+    'UART RX stable @ 115200',
+    'ADC sample captured: CH2',
+    'PWM duty adjusted to 42%',
+    'I2C bus scan complete',
+    'ISR tick synced',
+    'DMA transfer pass'
+  ];
 
-  if (logStream) {
-    const baseLogs = [
-      'UART RX stable @ 115200',
-      'ADC sample captured: CH2',
-      'PWM duty adjusted to 42%',
-      'I2C bus scan complete',
-      'ISR tick synced',
-      'DMA transfer pass'
-    ];
+  const renderLogLine = (text) => {
+    if (!logStream) return;
+    const line = document.createElement('li');
+    const stamp = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+    line.textContent = `[${stamp}] ${text}`;
+    logStream.prepend(line);
+    while (logStream.children.length > 6) {
+      logStream.removeChild(logStream.lastChild);
+    }
+  };
 
-    const renderLogLine = (text) => {
-      const line = document.createElement('li');
-      const stamp = new Date().toLocaleTimeString('zh-CN', { hour12: false });
-      line.textContent = `[${stamp}] ${text}`;
-      logStream.prepend(line);
-      while (logStream.children.length > 6) {
-        logStream.removeChild(logStream.lastChild);
+  const run = () => {
+    if (powerValue && powerBar && !powerTimer) {
+      powerTimer = setInterval(() => {
+        const next = Math.round(45 + Math.random() * 38 + Math.sin(Date.now() / 1000) * 12);
+        const safeValue = Math.max(0, Math.min(next, 100));
+        powerValue.textContent = String(safeValue);
+        powerBar.style.width = `${safeValue}%`;
+      }, 620);
+    }
+
+    if (liveClock && liveDate && !clockTimer) {
+      const updateClock = () => {
+        const now = new Date();
+        liveClock.textContent = now.toLocaleTimeString('zh-CN', { hour12: false });
+        liveDate.textContent = now.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' });
+      };
+      updateClock();
+      clockTimer = setInterval(updateClock, 1000);
+    }
+
+    if (logStream && !logTimer) {
+      if (!logStream.children.length) {
+        baseLogs.slice(0, 4).forEach((line) => renderLogLine(line));
       }
-    };
+      logTimer = setInterval(() => {
+        const next = baseLogs[Math.floor(Math.random() * baseLogs.length)];
+        renderLogLine(next);
+      }, 2600);
+    }
+  };
 
-    baseLogs.slice(0, 4).forEach((line) => renderLogLine(line));
-    setInterval(() => {
-      const next = baseLogs[Math.floor(Math.random() * baseLogs.length)];
-      renderLogLine(next);
-    }, 2600);
-  }
+  const stop = () => {
+    if (powerTimer) { clearInterval(powerTimer); powerTimer = null; }
+    if (clockTimer) { clearInterval(clockTimer); clockTimer = null; }
+    if (logTimer) { clearInterval(logTimer); logTimer = null; }
+  };
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stop();
+    else run();
+  });
+
+  run();
 
   if (sigButtons.length && signalState) {
     sigButtons.forEach((btn) => {
@@ -323,14 +395,26 @@ window.addEventListener('keydown', (event) => {
   }
 });
 
-Promise.all([loadArticles(), loadSiteConfig()]).then(([articles, siteConfig]) => {
-  state.allPublished = articles
-    .filter((item) => item.status === 'published')
-    .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+(async function init() {
+  try {
+    const [articles, siteConfig] = await Promise.all([loadArticles(), loadSiteConfig()]);
 
-  applySiteConfig(siteConfig);
-  renderTagFilters();
-  bindArticleInteractions();
-  renderArticles();
-  initWidgets();
-});
+    state.allPublished = articles
+      .filter((item) => item.status === 'published')
+      .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+
+    applySiteConfig(siteConfig);
+    renderTagFilters();
+    bindArticleInteractions();
+    state.loading = false;
+    state.error = '';
+    renderArticles();
+    initWidgets();
+    setSystemStatus('ONLINE');
+  } catch (err) {
+    state.loading = false;
+    state.error = '数据读取异常，请稍后刷新重试';
+    renderArticles();
+    setSystemStatus('DEGRADED', true);
+  }
+})();

@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="EneriCdl 的嵌入式学习主页：C 语言、STM32、项目复盘与技术文章。" />
+  <meta name="theme-color" content="#08111f" />
   <title>EneriCdl · Embedded Log</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -10,6 +12,7 @@
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
+  <a class="skip-link" href="#articles">跳到文章区</a>
   <div class="circuit-overlay" aria-hidden="true"></div>
   <div class="noise-overlay" aria-hidden="true"></div>
 
@@ -33,6 +36,10 @@
           <div class="actions">
             <a class="btn btn-primary" href="#articles">进入文章阵列</a>
             <a class="btn btn-ghost" href="mailto:807800242@qq.com">发我邮件</a>
+          </div>
+          <div class="hero-status" aria-label="系统状态">
+            <p>系统状态：<strong id="sysStatus">ONLINE</strong></p>
+            <p>加载模式：<strong id="cacheMode">REALTIME</strong></p>
           </div>
         </div>
       </div>
@@ -108,9 +115,15 @@
       </div>
       <div class="article-tools">
         <input id="articleSearch" class="search-input" type="search" placeholder="检索标题、摘要、正文、标签" />
+        <div class="tool-row">
+          <p id="articleCount" class="count-text">共 0 篇</p>
+          <button id="resetFiltersBtn" class="mini-btn" type="button">重置筛选</button>
+        </div>
         <div id="tagFilters" class="tag-filters" aria-label="标签筛选"></div>
       </div>
-      <div id="articleList" class="article-list"></div>
+      <div id="articleList" class="article-list">
+        <p class="empty">正在加载文章...</p>
+      </div>
       <div id="articlePager" class="article-pager"></div>
     </section>
 

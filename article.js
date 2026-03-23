@@ -25,14 +25,10 @@ function normalizeArticles(data) {
 }
 
 async function loadArticles() {
-  try {
-    const response = await fetch(`./articles.json?v=${Date.now()}`, { cache: 'no-store' });
-    if (!response.ok) return [];
-    const parsed = await response.json();
-    return normalizeArticles(parsed);
-  } catch {
-    return [];
-  }
+  const response = await fetch(`./articles.json?v=${Date.now()}`, { cache: 'no-store' });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const parsed = await response.json();
+  return normalizeArticles(parsed);
 }
 
 function getArticleId() {
@@ -64,11 +60,44 @@ function render(article) {
   `;
 }
 
-async function init() {
-  const id = getArticleId();
-  const articles = await loadArticles();
-  const target = articles.find((item) => item.id === id && item.status === 'published');
-  render(target);
+function initProgressBar() {
+  const bar = document.querySelector('#progressBar');
+  if (!bar) return;
+  const onScroll = () => {
+    const h = document.documentElement;
+    const total = h.scrollHeight - h.clientHeight;
+    const ratio = total > 0 ? (h.scrollTop / total) * 100 : 0;
+    bar.style.width = `${Math.max(0, Math.min(100, ratio))}%`;
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
 }
 
-init();
+function initCopyLink() {
+  const btn = document.querySelector('#copyLinkBtn');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      btn.textContent = '链接已复制';
+      setTimeout(() => { btn.textContent = '复制文章链接'; }, 1400);
+    } catch {
+      btn.textContent = '复制失败';
+      setTimeout(() => { btn.textContent = '复制文章链接'; }, 1400);
+    }
+  });
+}
+
+(async function init() {
+  const id = getArticleId();
+  initProgressBar();
+  initCopyLink();
+
+  try {
+    const articles = await loadArticles();
+    const target = articles.find((item) => item.id === id && item.status === 'published');
+    render(target);
+  } catch {
+    render(null);
+  }
+})();
