@@ -1,7 +1,29 @@
 ﻿const ADMIN_PASSWORD = ['dsxx', '705', 'xzh'].join('');
 const TOKEN_STORAGE_KEY = ['lab', '705', 'token'].join('_');
 
+const defaultSiteConfig = {
+  projects: [
+    { title: 'C 语言学习记录', desc: '语法、指针、数组、数据结构、算法练习，按阶段沉淀可复查笔记。' },
+    { title: 'STM32 嵌入式学习记录', desc: '聚焦 GPIO、定时器、中断、串口通信与驱动调试流程。' },
+    { title: '项目实战与复盘', desc: '每个小项目输出问题清单、解决路径、优化版本与经验总结。' }
+  ],
+  about: {
+    title: '关于我',
+    text1: '我把网页当作一个数字化实验台：每写完一个模块，就补一篇记录；每踩一次坑，就沉淀一套排查路径。',
+    text2: '目标是把“会做”逐步升级到“能讲清、能复用、能迁移”。'
+  },
+  timeline: {
+    title: '学习总线',
+    items: [
+      { bus: 'BUS-1', text: 'C 语言基础 + 指针与内存模型' },
+      { bus: 'BUS-2', text: 'STM32 外设驱动 + 中断通信' },
+      { bus: 'BUS-3', text: '项目整合 + 性能优化 + 文档化复盘' }
+    ]
+  }
+};
+
 let articles = [];
+let siteConfig = JSON.parse(JSON.stringify(defaultSiteConfig));
 
 function uid() {
   return `id_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
@@ -51,6 +73,21 @@ async function loadArticles() {
   }
 }
 
+async function loadSiteConfig() {
+  try {
+    const response = await fetch('./site-config.json', { cache: 'no-store' });
+    if (!response.ok) return JSON.parse(JSON.stringify(defaultSiteConfig));
+    const parsed = await response.json();
+    return {
+      projects: Array.isArray(parsed.projects) ? parsed.projects : defaultSiteConfig.projects,
+      about: parsed.about || defaultSiteConfig.about,
+      timeline: parsed.timeline || defaultSiteConfig.timeline
+    };
+  } catch {
+    return JSON.parse(JSON.stringify(defaultSiteConfig));
+  }
+}
+
 function renderList() {
   const list = document.querySelector('#manageList');
   const sorted = [...articles].sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
@@ -87,6 +124,70 @@ function upsertArticle(payload) {
   else articles.unshift(payload);
 }
 
+function fillSiteConfigForm(config) {
+  const p = Array.isArray(config.projects) ? config.projects : defaultSiteConfig.projects;
+  document.querySelector('#projectTitle1').value = p[0]?.title || '';
+  document.querySelector('#projectDesc1').value = p[0]?.desc || '';
+  document.querySelector('#projectTitle2').value = p[1]?.title || '';
+  document.querySelector('#projectDesc2').value = p[1]?.desc || '';
+  document.querySelector('#projectTitle3').value = p[2]?.title || '';
+  document.querySelector('#projectDesc3').value = p[2]?.desc || '';
+
+  const about = config.about || defaultSiteConfig.about;
+  document.querySelector('#aboutTitle').value = about.title || '';
+  document.querySelector('#aboutText1').value = about.text1 || '';
+  document.querySelector('#aboutText2').value = about.text2 || '';
+
+  const timeline = config.timeline || defaultSiteConfig.timeline;
+  document.querySelector('#timelineTitle').value = timeline.title || '';
+  const items = Array.isArray(timeline.items) ? timeline.items : defaultSiteConfig.timeline.items;
+  document.querySelector('#timelineItem1').value = `${items[0]?.bus || 'BUS-1'}|${items[0]?.text || ''}`;
+  document.querySelector('#timelineItem2').value = `${items[1]?.bus || 'BUS-2'}|${items[1]?.text || ''}`;
+  document.querySelector('#timelineItem3').value = `${items[2]?.bus || 'BUS-3'}|${items[2]?.text || ''}`;
+}
+
+function parseBusLine(value, fallbackBus) {
+  const raw = String(value || '').trim();
+  if (!raw) return { bus: fallbackBus, text: '' };
+  const idx = raw.indexOf('|');
+  if (idx < 0) return { bus: fallbackBus, text: raw };
+  const bus = raw.slice(0, idx).trim() || fallbackBus;
+  const text = raw.slice(idx + 1).trim();
+  return { bus, text };
+}
+
+function collectSiteConfigFromForm() {
+  return {
+    projects: [
+      {
+        title: document.querySelector('#projectTitle1').value.trim(),
+        desc: document.querySelector('#projectDesc1').value.trim()
+      },
+      {
+        title: document.querySelector('#projectTitle2').value.trim(),
+        desc: document.querySelector('#projectDesc2').value.trim()
+      },
+      {
+        title: document.querySelector('#projectTitle3').value.trim(),
+        desc: document.querySelector('#projectDesc3').value.trim()
+      }
+    ],
+    about: {
+      title: document.querySelector('#aboutTitle').value.trim(),
+      text1: document.querySelector('#aboutText1').value.trim(),
+      text2: document.querySelector('#aboutText2').value.trim()
+    },
+    timeline: {
+      title: document.querySelector('#timelineTitle').value.trim(),
+      items: [
+        parseBusLine(document.querySelector('#timelineItem1').value, 'BUS-1'),
+        parseBusLine(document.querySelector('#timelineItem2').value, 'BUS-2'),
+        parseBusLine(document.querySelector('#timelineItem3').value, 'BUS-3')
+      ]
+    }
+  };
+}
+
 function utf8ToBase64(text) {
   const bytes = new TextEncoder().encode(text);
   let binary = '';
@@ -109,11 +210,36 @@ async function getContentSha(owner, repo, path, branch, token) {
   return data.sha || '';
 }
 
+async function putFile(owner, repo, branch, path, content, token, messagePrefix) {
+  const sha = await getContentSha(owner, repo, path, branch, token);
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+  const body = {
+    message: `${messagePrefix} ${new Date().toISOString()}`,
+    content: utf8ToBase64(content),
+    branch
+  };
+  if (sha) body.sha = sha;
+
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`发布 ${path} 失败: ${response.status} ${text}`);
+  }
+}
+
 async function publishToGitHub() {
   const owner = document.querySelector('#owner').value.trim();
   const repo = document.querySelector('#repo').value.trim();
   const branch = document.querySelector('#branch').value.trim();
-  const path = document.querySelector('#path').value.trim();
   const tokenInput = document.querySelector('#token');
   const rememberToken = document.querySelector('#rememberToken');
   const token = tokenInput.value.trim() || localStorage.getItem(TOKEN_STORAGE_KEY) || '';
@@ -124,34 +250,12 @@ async function publishToGitHub() {
     return;
   }
 
-  statusEl.textContent = '正在发布...';
+  siteConfig = collectSiteConfigFromForm();
+  statusEl.textContent = '正在发布 articles.json + site-config.json ...';
 
   try {
-    const sha = await getContentSha(owner, repo, path, branch, token);
-    const content = JSON.stringify(articles, null, 2);
-    const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-
-    const body = {
-      message: `update articles ${new Date().toISOString()}`,
-      content: utf8ToBase64(content),
-      branch
-    };
-    if (sha) body.sha = sha;
-
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`发布失败: ${response.status} ${text}`);
-    }
+    await putFile(owner, repo, branch, 'articles.json', JSON.stringify(articles, null, 2), token, 'update articles');
+    await putFile(owner, repo, branch, 'site-config.json', JSON.stringify(siteConfig, null, 2), token, 'update site config');
 
     if (rememberToken && rememberToken.checked) {
       localStorage.setItem(TOKEN_STORAGE_KEY, token);
@@ -169,6 +273,17 @@ function downloadJson() {
   const a = document.createElement('a');
   a.href = url;
   a.download = 'articles.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function downloadConfigJson() {
+  const nextConfig = collectSiteConfigFromForm();
+  const blob = new Blob([JSON.stringify(nextConfig, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'site-config.json';
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -196,6 +311,7 @@ function bindAppEvents() {
   document.querySelector('#resetBtn').addEventListener('click', () => resetForm());
   document.querySelector('#publishBtn').addEventListener('click', () => publishToGitHub());
   document.querySelector('#downloadBtn').addEventListener('click', () => downloadJson());
+  document.querySelector('#downloadConfigBtn').addEventListener('click', () => downloadConfigJson());
   document.querySelector('#clearTokenBtn').addEventListener('click', () => {
     localStorage.removeItem(TOKEN_STORAGE_KEY);
     document.querySelector('#token').value = '';
@@ -233,15 +349,21 @@ function bindAppEvents() {
 }
 
 async function unlock() {
-  articles = await loadArticles();
+  const loaded = await Promise.all([loadArticles(), loadSiteConfig()]);
+  articles = loaded[0];
+  siteConfig = loaded[1];
+
   document.querySelector('#gate').classList.add('hidden');
   document.querySelector('#app').classList.remove('hidden');
   bindAppEvents();
   resetForm();
+  fillSiteConfigForm(siteConfig);
+
   const savedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
   if (savedToken) {
     document.querySelector('#token').value = savedToken;
   }
+
   renderList();
 }
 

@@ -16,6 +16,72 @@ const state = {
   tag: 'all'
 };
 
+const defaultSiteConfig = {
+  projects: [
+    { title: 'C 语言学习记录', desc: '语法、指针、数组、数据结构、算法练习，按阶段沉淀可复查笔记。' },
+    { title: 'STM32 嵌入式学习记录', desc: '聚焦 GPIO、定时器、中断、串口通信与驱动调试流程。' },
+    { title: '项目实战与复盘', desc: '每个小项目输出问题清单、解决路径、优化版本与经验总结。' }
+  ],
+  about: {
+    title: '关于我',
+    text1: '我把网页当作一个数字化实验台：每写完一个模块，就补一篇记录；每踩一次坑，就沉淀一套排查路径。',
+    text2: '目标是把“会做”逐步升级到“能讲清、能复用、能迁移”。'
+  },
+  timeline: {
+    title: '学习总线',
+    items: [
+      { bus: 'BUS-1', text: 'C 语言基础 + 指针与内存模型' },
+      { bus: 'BUS-2', text: 'STM32 外设驱动 + 中断通信' },
+      { bus: 'BUS-3', text: '项目整合 + 性能优化 + 文档化复盘' }
+    ]
+  }
+};
+
+async function loadSiteConfig() {
+  try {
+    const response = await fetch('./site-config.json', { cache: 'no-store' });
+    if (!response.ok) return defaultSiteConfig;
+    const parsed = await response.json();
+    return {
+      projects: Array.isArray(parsed.projects) ? parsed.projects : defaultSiteConfig.projects,
+      about: parsed.about || defaultSiteConfig.about,
+      timeline: parsed.timeline || defaultSiteConfig.timeline
+    };
+  } catch {
+    return defaultSiteConfig;
+  }
+}
+
+function setText(id, value) {
+  const el = document.querySelector(`#${id}`);
+  if (!el || typeof value !== 'string') return;
+  el.textContent = value;
+}
+
+function applySiteConfig(config) {
+  const projects = Array.isArray(config.projects) ? config.projects : [];
+  for (let i = 0; i < 3; i += 1) {
+    const row = projects[i] || defaultSiteConfig.projects[i];
+    setText(`projectTitle${i + 1}`, row.title || defaultSiteConfig.projects[i].title);
+    setText(`projectDesc${i + 1}`, row.desc || defaultSiteConfig.projects[i].desc);
+  }
+
+  const about = config.about || defaultSiteConfig.about;
+  setText('aboutTitle', about.title || defaultSiteConfig.about.title);
+  setText('aboutText1', about.text1 || defaultSiteConfig.about.text1);
+  setText('aboutText2', about.text2 || defaultSiteConfig.about.text2);
+
+  const timeline = config.timeline || defaultSiteConfig.timeline;
+  setText('timelineTitle', timeline.title || defaultSiteConfig.timeline.title);
+  const items = Array.isArray(timeline.items) ? timeline.items : defaultSiteConfig.timeline.items;
+  for (let i = 0; i < 3; i += 1) {
+    const row = items[i] || defaultSiteConfig.timeline.items[i];
+    const target = document.querySelector(`#timelineItem${i + 1}`);
+    if (!target) continue;
+    target.innerHTML = `<span>${escapeHtml(row.bus || defaultSiteConfig.timeline.items[i].bus)}</span> ${escapeHtml(row.text || defaultSiteConfig.timeline.items[i].text)}`;
+  }
+}
+
 function normalizeArticles(data) {
   if (!Array.isArray(data)) return [];
 
@@ -257,11 +323,12 @@ window.addEventListener('keydown', (event) => {
   }
 });
 
-loadArticles().then((articles) => {
+Promise.all([loadArticles(), loadSiteConfig()]).then(([articles, siteConfig]) => {
   state.allPublished = articles
     .filter((item) => item.status === 'published')
     .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
 
+  applySiteConfig(siteConfig);
   renderTagFilters();
   bindArticleInteractions();
   renderArticles();

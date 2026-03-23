@@ -62,8 +62,44 @@
       </section>
 
       <section class="panel">
+        <h2>页面内容配置</h2>
+        <div class="form">
+          <label for="projectTitle1">作品卡片 1 标题</label>
+          <input id="projectTitle1" />
+          <label for="projectDesc1">作品卡片 1 描述</label>
+          <textarea id="projectDesc1" rows="2"></textarea>
+
+          <label for="projectTitle2">作品卡片 2 标题</label>
+          <input id="projectTitle2" />
+          <label for="projectDesc2">作品卡片 2 描述</label>
+          <textarea id="projectDesc2" rows="2"></textarea>
+
+          <label for="projectTitle3">作品卡片 3 标题</label>
+          <input id="projectTitle3" />
+          <label for="projectDesc3">作品卡片 3 描述</label>
+          <textarea id="projectDesc3" rows="2"></textarea>
+
+          <label for="aboutTitle">关于我标题</label>
+          <input id="aboutTitle" />
+          <label for="aboutText1">关于我段落 1</label>
+          <textarea id="aboutText1" rows="2"></textarea>
+          <label for="aboutText2">关于我段落 2</label>
+          <textarea id="aboutText2" rows="2"></textarea>
+
+          <label for="timelineTitle">学习总线标题</label>
+          <input id="timelineTitle" />
+          <label for="timelineItem1">学习总线 1（格式：BUS-1|内容）</label>
+          <input id="timelineItem1" />
+          <label for="timelineItem2">学习总线 2（格式：BUS-2|内容）</label>
+          <input id="timelineItem2" />
+          <label for="timelineItem3">学习总线 3（格式：BUS-3|内容）</label>
+          <input id="timelineItem3" />
+        </div>
+      </section>
+
+      <section class="panel">
         <h2>发布到 GitHub</h2>
-        <p class="tip">会更新仓库中的 <code>articles.json</code>，别人访问网站就能看到。</p>
+        <p class="tip">会更新仓库中的 <code>articles.json</code> 和 <code>site-config.json</code>，别人访问网站就能看到。</p>
         <div class="form">
           <label for="owner">GitHub 用户名</label>
           <input id="owner" value="EneriCdl" />
@@ -74,9 +110,6 @@
           <label for="branch">分支</label>
           <input id="branch" value="main" />
 
-          <label for="path">文件路径</label>
-          <input id="path" value="articles.json" />
-
           <label for="token">GitHub Token（不会保存）</label>
           <input id="token" type="password" placeholder="需要 Contents: Read and write" />
           <label class="inline-check">
@@ -86,7 +119,8 @@
 
           <div class="form-actions">
             <button type="button" id="publishBtn" class="btn primary">发布到 GitHub</button>
-            <button type="button" id="downloadBtn" class="btn ghost">下载 JSON</button>
+            <button type="button" id="downloadBtn" class="btn ghost">下载文章 JSON</button>
+            <button type="button" id="downloadConfigBtn" class="btn ghost">下载页面配置 JSON</button>
             <button type="button" id="clearTokenBtn" class="btn ghost">清除已记住 Token</button>
           </div>
           <p id="publishStatus" class="tip"></p>
