@@ -34,7 +34,7 @@ function renderArticles(articles) {
     .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
 
   if (!publishedArticles.length) {
-    list.innerHTML = '<p class="empty">还没有已发布文章，前往“文章管理”创建第一篇。</p>';
+    list.innerHTML = '<p class="empty">还没有已发布文章，站长正在准备中。</p>';
     return;
   }
 
