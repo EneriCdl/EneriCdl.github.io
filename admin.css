@@ -1,0 +1,162 @@
+﻿:root {
+  --bg: #f7f3ec;
+  --panel: #fff;
+  --text: #1f2131;
+  --muted: #626579;
+  --brand: #d85d37;
+  --line: #ece2d6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Noto Sans SC", "Space Grotesk", sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at 12% 8%, #ffe9ca 0, transparent 36%), var(--bg);
+}
+
+.admin-page {
+  width: min(980px, 92vw);
+  margin: 0 auto;
+  padding: 52px 0 64px;
+  display: grid;
+  gap: 16px;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.head h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 1.6vw + 1rem, 2.4rem);
+}
+
+.head a {
+  color: #8b4a2b;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.panel h2 {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+}
+
+.form {
+  display: grid;
+  gap: 8px;
+}
+
+label {
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  border: 1px solid #d9ccbd;
+  border-radius: 10px;
+  padding: 10px;
+  font: inherit;
+  background: #fff;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.form-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border: 0;
+  border-radius: 999px;
+  height: 40px;
+  padding: 0 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary {
+  background: var(--brand);
+  color: #fff;
+}
+
+.ghost {
+  border: 1px solid #d9ccbd;
+  background: #fff;
+}
+
+.manage-list {
+  display: grid;
+  gap: 10px;
+}
+
+.item {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.item p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.item-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.item-head h3 {
+  margin: 0;
+}
+
+.status {
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f2ebe2;
+}
+
+.item-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.small {
+  height: 32px;
+  padding: 0 12px;
+}
+
+.empty {
+  margin: 0;
+  color: var(--muted);
+}
