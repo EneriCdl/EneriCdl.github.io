@@ -26,7 +26,7 @@ function normalizeArticles(data) {
 
 async function loadArticles() {
   try {
-    const response = await fetch('./articles.json', { cache: 'no-store' });
+    const response = await fetch(`./articles.json?v=${Date.now()}`, { cache: 'no-store' });
     if (!response.ok) return [];
     const parsed = await response.json();
     return normalizeArticles(parsed);

@@ -64,7 +64,7 @@ function fillForm(article) {
 
 async function loadArticles() {
   try {
-    const response = await fetch('./articles.json', { cache: 'no-store' });
+    const response = await fetch(`./articles.json?v=${Date.now()}`, { cache: 'no-store' });
     if (!response.ok) return [];
     const parsed = await response.json();
     return Array.isArray(parsed) ? parsed : [];
@@ -75,7 +75,7 @@ async function loadArticles() {
 
 async function loadSiteConfig() {
   try {
-    const response = await fetch('./site-config.json', { cache: 'no-store' });
+    const response = await fetch(`./site-config.json?v=${Date.now()}`, { cache: 'no-store' });
     if (!response.ok) return JSON.parse(JSON.stringify(defaultSiteConfig));
     const parsed = await response.json();
     return {
@@ -260,6 +260,12 @@ async function putFile(owner, repo, branch, path, content, token, messagePrefix)
     const text = await response.text();
     throw new Error(`发布 ${path} 失败: ${response.status} ${text}`);
   }
+
+  const data = await response.json();
+  return {
+    commitSha: data?.commit?.sha || '',
+    commitUrl: data?.commit?.html_url || ''
+  };
 }
 
 async function publishToGitHub() {
@@ -280,14 +286,16 @@ async function publishToGitHub() {
   statusEl.textContent = '正在发布 articles.json + site-config.json ...';
 
   try {
-    await putFile(owner, repo, branch, 'articles.json', JSON.stringify(articles, null, 2), token, 'update articles');
-    await putFile(owner, repo, branch, 'site-config.json', JSON.stringify(siteConfig, null, 2), token, 'update site config');
+    const articleResult = await putFile(owner, repo, branch, 'articles.json', JSON.stringify(articles, null, 2), token, 'update articles');
+    const configResult = await putFile(owner, repo, branch, 'site-config.json', JSON.stringify(siteConfig, null, 2), token, 'update site config');
 
     if (rememberToken && rememberToken.checked) {
       localStorage.setItem(TOKEN_STORAGE_KEY, token);
     }
 
-    statusEl.textContent = '发布成功。约 1-2 分钟后生效。';
+    const aSha = articleResult.commitSha ? articleResult.commitSha.slice(0, 7) : '-';
+    const cSha = configResult.commitSha ? configResult.commitSha.slice(0, 7) : '-';
+    statusEl.textContent = `发布成功。articles: ${aSha}，config: ${cSha}。约 1-2 分钟后生效。`;
   } catch (err) {
     statusEl.textContent = String(err.message || err);
   }
