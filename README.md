@@ -1,32 +1,36 @@
 ﻿# EneriCdl 网站维护说明
 
 ## 权限模型
-- 线上不再提供公开后台页面。
-- 文章发布权限只由 GitHub 仓库写权限控制。
-- 只有你（或你授权的协作者）可以修改 `articles.json` 并推送到 `main`。
+- 线上不提供后台发布入口。
+- 文章发布权限由 GitHub 仓库写权限控制。
+- 只有你（或你授权的协作者）可以发布。
 
-## 发布文章（本机）
-1. 编辑 `articles.json`。
-2. 在项目目录执行：
-   ```powershell
-   .\publish-articles.ps1
-   ```
-3. 等 1-2 分钟后访问 `https://enericdl.github.io` 查看更新。
+## 最简单发文方式（推荐）
+在项目目录执行：
 
-## 文章格式
-```json
-[
-  {
-    "id": "a1",
-    "title": "文章标题",
-    "summary": "摘要",
-    "content": "正文",
-    "tags": ["标签1", "标签2"],
-    "status": "published",
-    "updatedAt": "2026-03-24"
-  }
-]
+```powershell
+.\new-article.ps1
 ```
 
-- `status` 为 `published` 才会在首页显示。
-- `updatedAt` 建议使用 `YYYY-MM-DD`。
+按提示输入：标题、摘要、正文、标签、封面图、日期、状态。
+- 正文支持多行输入，输入 `END` 单独一行结束。
+- 最后可选是否立即发布。
+
+## 手动发布（如果你只改了 articles.json）
+```powershell
+.\publish-articles.ps1
+```
+
+## 文章字段说明
+- `id`: 文章唯一标识
+- `title`: 标题
+- `summary`: 摘要（首页显示）
+- `content`: 正文（详情页显示）
+- `cover`: 封面图 URL
+- `tags`: 标签数组
+- `status`: `published` 或 `draft`
+- `updatedAt`: 日期（YYYY-MM-DD）
+
+## 访问地址
+- 首页：`https://enericdl.github.io`
+- 文章详情：`https://enericdl.github.io/article.html?id=<文章id>`

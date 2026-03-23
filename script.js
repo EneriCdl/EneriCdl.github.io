@@ -1,4 +1,13 @@
-﻿function normalizeArticles(data) {
+﻿function escapeHtml(text) {
+  return String(text)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function normalizeArticles(data) {
   if (!Array.isArray(data)) return [];
 
   return data
@@ -8,6 +17,7 @@
       title: item.title || '未命名文章',
       summary: item.summary || '',
       content: item.content || '',
+      cover: item.cover || '',
       tags: Array.isArray(item.tags) ? item.tags : [],
       status: item.status || 'draft',
       updatedAt: item.updatedAt || ''
@@ -41,12 +51,18 @@ function renderArticles(articles) {
   list.innerHTML = publishedArticles
     .map((item) => {
       const tags = Array.isArray(item.tags) && item.tags.length ? `#${item.tags.join(' #')}` : '#未分类';
+      const cover = item.cover || 'https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=1200&q=80';
+      const href = `./article.html?id=${encodeURIComponent(item.id)}`;
+
       return `
-      <article class="article-item">
-        <p class="article-meta">${item.updatedAt || '未设置日期'} · ${tags}</p>
-        <h3>${item.title}</h3>
-        <p>${item.summary || item.content || ''}</p>
-      </article>`;
+      <a class="article-card" href="${href}">
+        <img class="article-cover" src="${escapeHtml(cover)}" alt="${escapeHtml(item.title)}" loading="lazy" />
+        <div class="article-body">
+          <p class="article-meta">${escapeHtml(item.updatedAt || '未设置日期')} · ${escapeHtml(tags)}</p>
+          <h3>${escapeHtml(item.title)}</h3>
+          <p>${escapeHtml(item.summary || item.content || '')}</p>
+        </div>
+      </a>`;
     })
     .join('');
 }
@@ -57,16 +73,5 @@ revealSeq.forEach((selector, i) => {
   if (!el) return;
   setTimeout(() => el.classList.add('reveal'), i * 120);
 });
-
-const projectsLink = document.querySelector('.btn-primary[href="#projects"]');
-const projectsSection = document.querySelector('#projects');
-
-if (projectsLink && projectsSection) {
-  projectsLink.addEventListener('click', (event) => {
-    event.preventDefault();
-    projectsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    history.replaceState(null, '', '#projects');
-  });
-}
 
 loadArticles().then((articles) => renderArticles(articles));

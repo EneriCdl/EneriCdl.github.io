@@ -15,19 +15,33 @@
 
   <main class="page">
     <section class="hero" id="top">
-      <nav class="guide-tags" aria-label="页面导航">
-        <a class="guide-tag" href="#projects">作品</a>
-        <a class="guide-tag" href="#about">关于我</a>
-        <a class="guide-tag" href="#timeline">学习路线</a>
-        <a class="guide-tag" href="#articles">文章</a>
+      <nav class="quick-nav" aria-label="页面导航">
+        <a class="quick-item" href="#projects">
+          <span class="quick-title">作品</span>
+          <span class="quick-sub">学习方向</span>
+        </a>
+        <a class="quick-item" href="#about">
+          <span class="quick-title">关于我</span>
+          <span class="quick-sub">个人介绍</span>
+        </a>
+        <a class="quick-item" href="#timeline">
+          <span class="quick-title">路线</span>
+          <span class="quick-sub">阶段计划</span>
+        </a>
+        <a class="quick-item" href="#articles">
+          <span class="quick-title">文章</span>
+          <span class="quick-sub">深度阅读</span>
+        </a>
       </nav>
-      <h1>我是 EneriCdl，<br>正在搭建自己的网页宇宙。</h1>
+
+      <h1>我是 EneriCdl，<br>持续记录嵌入式学习与项目成长。</h1>
       <p class="lead">
-        我是五邑大学大一学生，正在持续记录技术成长。邮箱：<a href="mailto:807800242@qq.com">807800242@qq.com</a>
+        五邑大学大一学生，专注 C 语言与 STM32。这里会长期更新实验记录、调试笔记和项目复盘。
+        邮箱：<a href="mailto:807800242@qq.com">807800242@qq.com</a>
       </p>
 
       <div class="actions">
-        <a class="btn btn-primary" href="#projects">查看作品</a>
+        <a class="btn btn-primary" href="#articles">开始阅读</a>
         <a class="btn btn-ghost" href="mailto:807800242@qq.com">联系我</a>
       </div>
     </section>
@@ -35,37 +49,37 @@
     <section id="projects" class="cards" aria-label="作品分区">
       <article class="card">
         <h2>C 语言学习记录</h2>
-        <p>整理语法基础、指针、数组和常见算法练习过程。</p>
+        <p>整理语法基础、指针、数组、数据结构与常见算法练习过程。</p>
       </article>
       <article class="card">
         <h2>STM32 嵌入式学习记录</h2>
-        <p>记录外设驱动、定时器、中断与串口通信等实践内容。</p>
+        <p>记录外设驱动、定时器、中断、串口通信与调试思路。</p>
       </article>
       <article class="card">
         <h2>项目实战与总结</h2>
-        <p>沉淀每次实验和小项目中的问题、方案与复盘笔记。</p>
+        <p>沉淀每个实验和小项目中的问题、方案、优化与复盘。</p>
       </article>
     </section>
 
     <section class="panel" id="about">
       <h2>关于我</h2>
       <p>目前专注于 C 语言与 STM32 嵌入式方向学习，计划通过持续写作把每一次实验、调试和踩坑经验沉淀成可复用的方法。</p>
-      <p>这个站点会长期更新：学习笔记、项目复盘、阶段总结。</p>
+      <p>目标是逐步形成自己的技术体系：从基础语法到工程实践，再到完整项目实现。</p>
     </section>
 
     <section class="panel" id="timeline">
       <h2>学习路线</h2>
       <ul class="timeline-list">
-        <li><span>阶段 1</span> C 语言基础与数据结构练习</li>
+        <li><span>阶段 1</span> C 语言基础、指针与数据结构</li>
         <li><span>阶段 2</span> STM32 外设驱动与中断机制</li>
-        <li><span>阶段 3</span> 综合小项目开发与优化</li>
+        <li><span>阶段 3</span> 项目整合、性能优化与复盘</li>
       </ul>
     </section>
 
     <section class="panel" id="articles">
       <div class="panel-head">
         <h2>文章</h2>
-        <span class="text-link">文章由站长本地维护并发布</span>
+        <span class="text-link">点击卡片进入详情页阅读全文</span>
       </div>
       <div id="articleList" class="article-list"></div>
     </section>
