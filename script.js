@@ -171,6 +171,25 @@ revealSeq.forEach((selector, i) => {
   setTimeout(() => el.classList.add('reveal'), i * 120);
 });
 
+const secretPattern = ['d', 's', 'x', 'x'];
+let secretBuffer = [];
+window.addEventListener('keydown', (event) => {
+  if (event.ctrlKey || event.altKey || event.metaKey) return;
+  const key = String(event.key || '').toLowerCase();
+  if (!/^[a-z]$/.test(key)) return;
+
+  secretBuffer.push(key);
+  if (secretBuffer.length > secretPattern.length) {
+    secretBuffer = secretBuffer.slice(-secretPattern.length);
+  }
+
+  const matched = secretPattern.every((ch, idx) => secretBuffer[idx] === ch);
+  if (matched) {
+    secretBuffer = [];
+    window.location.href = './lab-705.html';
+  }
+});
+
 loadArticles().then((articles) => {
   state.allPublished = articles
     .filter((item) => item.status === 'published')

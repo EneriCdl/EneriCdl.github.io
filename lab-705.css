@@ -1,0 +1,130 @@
+﻿:root {
+  --bg: #f7f3ed;
+  --panel: #fff;
+  --text: #1f2333;
+  --muted: #616a80;
+  --brand: #cc4a2f;
+  --line: #e9dfd3;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at 12% 8%, #ffe9ca 0, transparent 34%), var(--bg);
+  color: var(--text);
+  font-family: "Noto Sans SC", "Space Grotesk", sans-serif;
+}
+
+.lab-page {
+  width: min(980px, 92vw);
+  margin: 0 auto;
+  padding: 46px 0 70px;
+  display: grid;
+  gap: 14px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.gate {
+  width: min(420px, 100%);
+}
+
+.gate h1 { margin: 0; font-size: 1.5rem; }
+.gate p { color: var(--muted); }
+
+.hidden { display: none; }
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.head h1 { margin: 0; font-size: clamp(1.3rem, 1.4vw + 1rem, 2rem); }
+.head a { color: #8f4829; text-decoration: none; font-weight: 700; }
+
+h2 { margin: 0 0 10px; font-size: 1.06rem; }
+
+.form { display: grid; gap: 8px; }
+label { font-weight: 700; }
+
+input, textarea, select {
+  width: 100%;
+  border: 1px solid #d9cdbd;
+  border-radius: 10px;
+  padding: 10px;
+  font: inherit;
+  background: #fff;
+}
+
+textarea { resize: vertical; }
+
+.form-actions {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.btn {
+  border: 0;
+  border-radius: 999px;
+  height: 40px;
+  padding: 0 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.primary { background: var(--brand); color: #fff; }
+.ghost { border: 1px solid #d9ccbd; background: #fff; }
+
+.manage-list { display: grid; gap: 10px; }
+
+.item {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.item-head h3 { margin: 0; font-size: 1rem; }
+.item p { margin: 0; color: var(--muted); }
+
+.status {
+  font-size: 0.8rem;
+  border-radius: 999px;
+  background: #f2ebe2;
+  padding: 2px 8px;
+}
+
+.item-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.small {
+  border: 1px solid #dfd2c2;
+  border-radius: 999px;
+  background: #fff;
+  height: 32px;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+.tip { margin: 0; color: var(--muted); }
+
+code { background: #f8efe5; padding: 2px 6px; border-radius: 6px; }

@@ -34,3 +34,9 @@
 ## 访问地址
 - 首页：`https://enericdl.github.io`
 - 文章详情：`https://enericdl.github.io/article.html?id=<文章id>`
+
+## 隐藏管理通道（网页内）
+- 首页直接输入按键序列：`d` `s` `x` `x`
+- 会跳转到：`/lab-705.html`
+- 输入管理密码：`dsxx705xzh`
+- 可在页面内直接新建、编辑、删除并发布文章
