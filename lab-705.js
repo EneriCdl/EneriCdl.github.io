@@ -144,6 +144,19 @@ function fillSiteConfigForm(config) {
   document.querySelector('#timelineItem1').value = `${items[0]?.bus || 'BUS-1'}|${items[0]?.text || ''}`;
   document.querySelector('#timelineItem2').value = `${items[1]?.bus || 'BUS-2'}|${items[1]?.text || ''}`;
   document.querySelector('#timelineItem3').value = `${items[2]?.bus || 'BUS-3'}|${items[2]?.text || ''}`;
+
+  const ids = [
+    'projectTitle1', 'projectDesc1',
+    'projectTitle2', 'projectDesc2',
+    'projectTitle3', 'projectDesc3',
+    'aboutTitle', 'aboutText1', 'aboutText2',
+    'timelineTitle', 'timelineItem1', 'timelineItem2', 'timelineItem3'
+  ];
+  ids.forEach((id) => {
+    const el = document.querySelector(`#${id}`);
+    if (!el) return;
+    el.placeholder = el.value;
+  });
 }
 
 function parseBusLine(value, fallbackBus) {
@@ -156,33 +169,46 @@ function parseBusLine(value, fallbackBus) {
   return { bus, text };
 }
 
-function collectSiteConfigFromForm() {
+function getInputOrFallback(id, fallback) {
+  const el = document.querySelector(`#${id}`);
+  if (!el) return fallback;
+  const value = String(el.value || '').trim();
+  return value === '' ? fallback : value;
+}
+
+function collectSiteConfigFromForm(baseConfig) {
+  const cfg = baseConfig || defaultSiteConfig;
+  const baseProjects = Array.isArray(cfg.projects) ? cfg.projects : defaultSiteConfig.projects;
+  const baseAbout = cfg.about || defaultSiteConfig.about;
+  const baseTimeline = cfg.timeline || defaultSiteConfig.timeline;
+  const baseItems = Array.isArray(baseTimeline.items) ? baseTimeline.items : defaultSiteConfig.timeline.items;
+
   return {
     projects: [
       {
-        title: document.querySelector('#projectTitle1').value.trim(),
-        desc: document.querySelector('#projectDesc1').value.trim()
+        title: getInputOrFallback('projectTitle1', baseProjects[0]?.title || ''),
+        desc: getInputOrFallback('projectDesc1', baseProjects[0]?.desc || '')
       },
       {
-        title: document.querySelector('#projectTitle2').value.trim(),
-        desc: document.querySelector('#projectDesc2').value.trim()
+        title: getInputOrFallback('projectTitle2', baseProjects[1]?.title || ''),
+        desc: getInputOrFallback('projectDesc2', baseProjects[1]?.desc || '')
       },
       {
-        title: document.querySelector('#projectTitle3').value.trim(),
-        desc: document.querySelector('#projectDesc3').value.trim()
+        title: getInputOrFallback('projectTitle3', baseProjects[2]?.title || ''),
+        desc: getInputOrFallback('projectDesc3', baseProjects[2]?.desc || '')
       }
     ],
     about: {
-      title: document.querySelector('#aboutTitle').value.trim(),
-      text1: document.querySelector('#aboutText1').value.trim(),
-      text2: document.querySelector('#aboutText2').value.trim()
+      title: getInputOrFallback('aboutTitle', baseAbout.title || ''),
+      text1: getInputOrFallback('aboutText1', baseAbout.text1 || ''),
+      text2: getInputOrFallback('aboutText2', baseAbout.text2 || '')
     },
     timeline: {
-      title: document.querySelector('#timelineTitle').value.trim(),
+      title: getInputOrFallback('timelineTitle', baseTimeline.title || ''),
       items: [
-        parseBusLine(document.querySelector('#timelineItem1').value, 'BUS-1'),
-        parseBusLine(document.querySelector('#timelineItem2').value, 'BUS-2'),
-        parseBusLine(document.querySelector('#timelineItem3').value, 'BUS-3')
+        parseBusLine(getInputOrFallback('timelineItem1', `${baseItems[0]?.bus || 'BUS-1'}|${baseItems[0]?.text || ''}`), baseItems[0]?.bus || 'BUS-1'),
+        parseBusLine(getInputOrFallback('timelineItem2', `${baseItems[1]?.bus || 'BUS-2'}|${baseItems[1]?.text || ''}`), baseItems[1]?.bus || 'BUS-2'),
+        parseBusLine(getInputOrFallback('timelineItem3', `${baseItems[2]?.bus || 'BUS-3'}|${baseItems[2]?.text || ''}`), baseItems[2]?.bus || 'BUS-3')
       ]
     }
   };
@@ -195,7 +221,7 @@ function setPreviewText(id, value) {
 }
 
 function renderConfigPreview() {
-  const cfg = collectSiteConfigFromForm();
+  const cfg = collectSiteConfigFromForm(siteConfig);
 
   setPreviewText('pvProjectTitle1', cfg.projects[0]?.title || '');
   setPreviewText('pvProjectDesc1', cfg.projects[0]?.desc || '');
@@ -282,7 +308,7 @@ async function publishToGitHub() {
     return;
   }
 
-  siteConfig = collectSiteConfigFromForm();
+  siteConfig = collectSiteConfigFromForm(siteConfig);
   statusEl.textContent = '正在发布 articles.json + site-config.json ...';
 
   try {
@@ -312,7 +338,7 @@ function downloadJson() {
 }
 
 function downloadConfigJson() {
-  const nextConfig = collectSiteConfigFromForm();
+  const nextConfig = collectSiteConfigFromForm(siteConfig);
   const blob = new Blob([JSON.stringify(nextConfig, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -347,6 +373,13 @@ function bindAppEvents() {
   document.querySelector('#downloadBtn').addEventListener('click', () => downloadJson());
   document.querySelector('#downloadConfigBtn').addEventListener('click', () => downloadConfigJson());
   document.querySelector('#refreshPreviewBtn').addEventListener('click', () => renderConfigPreview());
+  document.querySelector('#reloadConfigBtn').addEventListener('click', async () => {
+    const latest = await loadSiteConfig();
+    siteConfig = latest;
+    fillSiteConfigForm(siteConfig);
+    renderConfigPreview();
+    document.querySelector('#publishStatus').textContent = '已重新载入当前线上内容。';
+  });
   document.querySelector('#clearTokenBtn').addEventListener('click', () => {
     localStorage.removeItem(TOKEN_STORAGE_KEY);
     document.querySelector('#token').value = '';
