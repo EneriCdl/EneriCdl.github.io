@@ -1,11 +1,14 @@
-﻿[
+[
   {
     "id": "2026-03-24-c-basic-review",
     "title": "C 语言复习：指针与数组的关系",
     "summary": "本篇记录我对指针、数组下标与内存访问的理解，附上常见错误排查。",
     "content": "今天主要复习了指针和数组在内存中的表示方式。\n\n1. 指针变量保存的是地址。\n2. 数组名在多数表达式中会退化为首元素地址。\n3. 调试时优先看地址变化和越界风险。",
     "cover": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=1200&q=80",
-    "tags": ["C语言", "基础"],
+    "tags": [
+      "C语言",
+      "基础"
+    ],
     "status": "published",
     "updatedAt": "2026-03-24"
   },
@@ -15,7 +18,10 @@
     "summary": "完成 GPIO 点灯和 USART 串口打印，梳理了时钟配置与初始化流程。",
     "content": "本次实验重点是理解 CubeMX 自动生成代码结构，并通过串口输出验证程序运行状态。\n\n后续计划：补上外部中断和按键消抖实验。",
     "cover": "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=1200&q=80",
-    "tags": ["STM32", "嵌入式"],
+    "tags": [
+      "STM32",
+      "嵌入式"
+    ],
     "status": "published",
     "updatedAt": "2026-03-23"
   },
@@ -25,7 +31,10 @@
     "summary": "把这篇复制改名即可发布：标题、摘要、正文、标签、日期。",
     "content": "这是一个可直接复用的文章模板。\n\n你可以把这里替换成本周学习内容，然后把 status 改成 published。",
     "cover": "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1200&q=80",
-    "tags": ["周记", "模板"],
+    "tags": [
+      "周记",
+      "模板"
+    ],
     "status": "draft",
     "updatedAt": "2026-03-22"
   }
