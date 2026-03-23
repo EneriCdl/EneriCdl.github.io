@@ -19,6 +19,10 @@ body {
   min-height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: "Noto Sans SC", "Space Grotesk", sans-serif;
   color: var(--text);
@@ -136,6 +140,10 @@ h1 {
   display: grid;
   gap: 14px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+#projects {
+  scroll-margin-top: 24px;
 }
 
 .card {
