@@ -162,6 +162,20 @@ textarea {
   color: var(--muted);
 }
 
+.guide-list {
+  margin: 0 0 10px;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.guide-list a {
+  color: #8b4a2b;
+  font-weight: 700;
+}
+
 code {
   padding: 2px 6px;
   border-radius: 6px;
