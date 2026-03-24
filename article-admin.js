@@ -1,4 +1,5 @@
 ﻿const { getToday, escapeHtml, setTip, putFile, loadSavedToken, saveToken, clearSavedToken, bindGate } = window.AdminCommon;
+const ADMIN_SESSION_KEY = 'lab705_admin_session_ok';
 
 const ALLOWED_STATUS = new Set(['draft', 'published']);
 let articles = [];
@@ -287,4 +288,12 @@ async function unlock() {
   if (savedToken) document.querySelector('#token').value = savedToken;
 }
 
-bindGate(unlock);
+if (sessionStorage.getItem(ADMIN_SESSION_KEY) === '1') {
+  void unlock();
+} else {
+  bindGate(async () => {
+    sessionStorage.setItem(ADMIN_SESSION_KEY, '1');
+    await unlock();
+  });
+}
+

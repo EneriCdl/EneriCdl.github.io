@@ -1,6 +1,8 @@
 ﻿const FALLBACK_PASSWORD = ['dsxx', '705', 'xzh'].join('');
+const ADMIN_SESSION_KEY = 'lab705_admin_session_ok';
 
 async function unlock() {
+  sessionStorage.setItem(ADMIN_SESSION_KEY, '1');
   document.querySelector('#gate').classList.add('hidden');
   document.querySelector('#app').classList.remove('hidden');
 }
