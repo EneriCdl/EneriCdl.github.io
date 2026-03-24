@@ -1,5 +1,4 @@
-﻿const { getToday, escapeHtml, setTip, putFile, loadSavedToken, saveToken, clearSavedToken, bindGate } = window.AdminCommon;
-const ADMIN_SESSION_KEY = 'lab705_admin_session_ok';
+﻿const { getToday, escapeHtml, setTip, putFile, loadSavedToken, saveToken, clearSavedToken } = window.AdminCommon;
 
 const ALLOWED_STATUS = new Set(['draft', 'published']);
 let articles = [];
@@ -277,8 +276,6 @@ function bindEvents() {
 
 async function unlock() {
   articles = await loadArticles();
-  document.querySelector('#gate').classList.add('hidden');
-  document.querySelector('#app').classList.remove('hidden');
 
   bindEvents();
   resetForm();
@@ -288,12 +285,6 @@ async function unlock() {
   if (savedToken) document.querySelector('#token').value = savedToken;
 }
 
-if (sessionStorage.getItem(ADMIN_SESSION_KEY) === '1') {
-  void unlock();
-} else {
-  bindGate(async () => {
-    sessionStorage.setItem(ADMIN_SESSION_KEY, '1');
-    await unlock();
-  });
-}
+void unlock();
+
 
