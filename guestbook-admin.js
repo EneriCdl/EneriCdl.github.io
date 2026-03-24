@@ -1,5 +1,14 @@
-﻿const { setTip, putFile, loadSavedToken, saveToken, clearSavedToken } = window.AdminCommon;
-
+﻿const Common = window.AdminCommon || {};
+const setTip = Common.setTip || ((id, message) => {
+  const el = document.querySelector(`#${id}`);
+  if (el) el.textContent = String(message || '');
+});
+const putFile = Common.putFile || (async () => {
+  throw new Error('admin-common.js 加载失败，请 Ctrl+F5 强制刷新后重试。');
+});
+const loadSavedToken = Common.loadSavedToken || (() => localStorage.getItem('lab_705_token') || '');
+const saveToken = Common.saveToken || ((token) => localStorage.setItem('lab_705_token', token));
+const clearSavedToken = Common.clearSavedToken || (() => localStorage.removeItem('lab_705_token'));
 let messages = [];
 let isPublishing = false;
 
@@ -278,6 +287,13 @@ async function unlock() {
   if (savedToken) document.querySelector('#token').value = savedToken;
 }
 
-void unlock();
+window.addEventListener('error', (event) => {
+  setTip('publishStatus', `页面脚本异常：${event.message || 'unknown error'}`, 'error');
+});
+
+void unlock().catch((err) => {
+  setTip('publishStatus', String(err.message || err), 'error');
+});
+
 
 
