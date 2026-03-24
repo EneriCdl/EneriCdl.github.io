@@ -355,6 +355,15 @@ code {
   font-size: 1rem;
 }
 
+[contenteditable="true"] {
+  cursor: text;
+}
+
+[contenteditable="true"]:focus {
+  outline: 1px dashed var(--accent);
+  border-radius: 6px;
+}
+
 .preview-card p,
 .preview-panel p,
 .portal-card p {

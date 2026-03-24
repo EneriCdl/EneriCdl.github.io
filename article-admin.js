@@ -49,10 +49,18 @@ function validateArticles(nextArticles) {
 async function loadArticles() {
   try {
     const response = await fetch(`./articles.json?v=${Date.now()}`, { cache: 'no-store' });
-    if (!response.ok) return [];
+    if (!response.ok) {
+      const fallback = await fetch('./articles.json', { cache: 'no-store' });
+      if (!fallback.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const parsed = await fallback.json();
+      return Array.isArray(parsed) ? parsed.map(normalizeArticle) : [];
+    }
     const parsed = await response.json();
     return Array.isArray(parsed) ? parsed.map(normalizeArticle) : [];
-  } catch {
+  } catch (err) {
+    setTip('publishStatus', `读取文章失败：${String(err.message || err)}`, 'error');
     return [];
   }
 }
@@ -285,6 +293,8 @@ async function unlock() {
   if (savedToken) document.querySelector('#token').value = savedToken;
 }
 
-void unlock();
+void unlock().catch((err) => {
+  setTip('publishStatus', String(err.message || err), 'error');
+});
 
 

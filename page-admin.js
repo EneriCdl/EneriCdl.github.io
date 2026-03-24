@@ -155,6 +155,50 @@ function renderConfigPreview() {
   setPreviewText('pvTimelineItem3', `${cfg.timeline.items[2]?.bus || 'BUS-3'} ${cfg.timeline.items[2]?.text || ''}`.trim());
 }
 
+function bindPreviewEditors() {
+  const directMap = [
+    ['pvProjectTitle1', 'projectTitle1'],
+    ['pvProjectDesc1', 'projectDesc1'],
+    ['pvProjectTitle2', 'projectTitle2'],
+    ['pvProjectDesc2', 'projectDesc2'],
+    ['pvProjectTitle3', 'projectTitle3'],
+    ['pvProjectDesc3', 'projectDesc3'],
+    ['pvAboutTitle', 'aboutTitle'],
+    ['pvAboutText1', 'aboutText1'],
+    ['pvAboutText2', 'aboutText2'],
+    ['pvTimelineTitle', 'timelineTitle']
+  ];
+
+  directMap.forEach(([previewId, inputId]) => {
+    const pv = document.querySelector(`#${previewId}`);
+    const input = document.querySelector(`#${inputId}`);
+    if (!pv || !input) return;
+    pv.addEventListener('input', () => {
+      input.value = pv.textContent.trim();
+    });
+  });
+
+  const timelineMap = [
+    ['pvTimelineItem1', 'timelineItem1', 'BUS-1'],
+    ['pvTimelineItem2', 'timelineItem2', 'BUS-2'],
+    ['pvTimelineItem3', 'timelineItem3', 'BUS-3']
+  ];
+  timelineMap.forEach(([previewId, inputId, fallbackBus]) => {
+    const pv = document.querySelector(`#${previewId}`);
+    const input = document.querySelector(`#${inputId}`);
+    if (!pv || !input) return;
+    pv.addEventListener('input', () => {
+      const text = pv.textContent.trim();
+      const parts = text.split(/\s+/);
+      const first = parts[0] || '';
+      const looksBus = /^BUS-\d+$/i.test(first);
+      const bus = looksBus ? first.toUpperCase() : (String(input.value || '').split('|')[0] || fallbackBus);
+      const content = looksBus ? parts.slice(1).join(' ') : text;
+      input.value = `${bus}|${content}`.trim();
+    });
+  });
+}
+
 function downloadConfigJson() {
   const nextConfig = collectSiteConfigFromForm(siteConfig);
   const blob = new Blob([JSON.stringify(nextConfig, null, 2)], { type: 'application/json' });
@@ -248,6 +292,7 @@ async function unlock() {
   siteConfig = await loadSiteConfig();
 
   bindEvents();
+  bindPreviewEditors();
   fillSiteConfigForm(siteConfig);
   renderConfigPreview();
 
