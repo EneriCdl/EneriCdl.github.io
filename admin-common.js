@@ -103,7 +103,7 @@ function bindGate(onUnlock) {
   }
 
   const tryUnlock = async () => {
-    const input = passwordInput.value;
+    const input = String(passwordInput.value || '').trim();
     if (input === ADMIN_PASSWORD) {
       if (message) message.textContent = '';
       await onUnlock();
