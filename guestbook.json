@@ -1,1 +1,34 @@
-﻿[]
+﻿[
+  {
+    "id": "msg_20260324_001",
+    "mode": "anonymous",
+    "name": "匿名访客",
+    "content": "页面做得很有科技感，文章也很接地气，继续加油！",
+    "createdAt": "2026-03-24 21:08:12",
+    "status": "approved"
+  },
+  {
+    "id": "msg_20260324_002",
+    "mode": "anonymous",
+    "name": "匿名访客",
+    "content": "STM32 学习记录对我很有帮助，期待后续项目复盘。",
+    "createdAt": "2026-03-24 21:12:47",
+    "status": "approved"
+  },
+  {
+    "id": "msg_20260324_003",
+    "mode": "anonymous",
+    "name": "匿名访客",
+    "content": "排版清爽，内容结构也很清楚，收藏了。",
+    "createdAt": "2026-03-24 21:16:05",
+    "status": "approved"
+  },
+  {
+    "id": "msg_20260324_004",
+    "mode": "anonymous",
+    "name": "匿名访客",
+    "content": "建议后面可以多写一点调试踩坑过程，实战价值会更高。",
+    "createdAt": "2026-03-24 21:19:33",
+    "status": "approved"
+  }
+]
