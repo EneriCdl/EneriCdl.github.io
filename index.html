@@ -24,6 +24,7 @@
           <a class="bus-item" href="#about"><span>02</span> 身份卡</a>
           <a class="bus-item" href="#timeline"><span>03</span> 学习总线</a>
           <a class="bus-item" href="#articles"><span>04</span> 文章阵列</a>
+          <a class="bus-item" href="#guestbook"><span>05</span> 留言板</a>
         </nav>
 
         <div class="hero-core">
@@ -125,6 +126,49 @@
         <p class="empty">正在加载文章...</p>
       </div>
       <div id="articlePager" class="article-pager"></div>
+    </section>
+
+    <section class="panel" id="guestbook">
+      <div class="panel-head">
+        <h2>访客留言板</h2>
+        <span class="text-link">支持匿名或实名留言，站长审核后展示</span>
+      </div>
+
+      <form id="guestbookForm" class="guestbook-form">
+        <div class="identity-row">
+          <label class="mode-pill">
+            <input type="radio" name="guestMode" value="anonymous" checked />
+            <span>匿名</span>
+          </label>
+          <label class="mode-pill">
+            <input type="radio" name="guestMode" value="real" />
+            <span>实名</span>
+          </label>
+        </div>
+
+        <input id="guestName" class="search-input" placeholder="实名时填写你的称呼" disabled />
+        <textarea id="guestMessage" class="search-input guest-text" rows="4" maxlength="300" placeholder="写下你的留言（最多 300 字）"></textarea>
+        <div class="tool-row">
+          <button id="guestSubmitBtn" class="mini-btn" type="submit">提交留言</button>
+          <button id="guestResetBtn" class="mini-btn" type="button">清空</button>
+        </div>
+        <p id="guestFormStatus" class="count-text">留言会先保存在你的浏览器，并由站长整理审核后发布。</p>
+      </form>
+
+      <div class="guestbook-columns">
+        <div>
+          <h3 class="guestbook-title">已发布留言</h3>
+          <div id="guestbookList" class="guestbook-list">
+            <p class="empty">正在加载留言...</p>
+          </div>
+        </div>
+        <div>
+          <h3 class="guestbook-title">我的待审核留言（当前设备）</h3>
+          <div id="guestPendingList" class="guestbook-list">
+            <p class="empty">暂无待审核留言。</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <footer class="footer">

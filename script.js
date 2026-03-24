@@ -8,6 +8,7 @@
 }
 
 const PAGE_SIZE = 4;
+const GUEST_PENDING_KEY = 'guestbook_pending_messages';
 const state = {
   allPublished: [],
   filtered: [],
@@ -16,6 +17,10 @@ const state = {
   tag: 'all',
   loading: true,
   error: ''
+};
+const guestbookState = {
+  published: [],
+  pending: []
 };
 
 const defaultSiteConfig = {
@@ -114,6 +119,140 @@ async function loadSiteConfig() {
 async function loadArticles() {
   const parsed = await fetchJsonWithTimeout(`./articles.json?v=${Date.now()}`);
   return normalizeArticles(parsed);
+}
+
+function normalizeGuestbook(data) {
+  if (!Array.isArray(data)) return [];
+  return data
+    .filter((item) => item && typeof item === 'object')
+    .map((item) => ({
+      id: item.id || '',
+      mode: item.mode === 'real' ? 'real' : 'anonymous',
+      name: item.name || '匿名访客',
+      content: item.content || '',
+      createdAt: item.createdAt || '',
+      status: item.status === 'hidden' ? 'hidden' : 'approved'
+    }));
+}
+
+async function loadGuestbook() {
+  try {
+    const parsed = await fetchJsonWithTimeout(`./guestbook.json?v=${Date.now()}`);
+    return normalizeGuestbook(parsed);
+  } catch {
+    return [];
+  }
+}
+
+function loadPendingGuestbook() {
+  try {
+    const raw = localStorage.getItem(GUEST_PENDING_KEY);
+    if (!raw) return [];
+    return normalizeGuestbook(JSON.parse(raw)).map((item) => ({ ...item, status: 'pending' }));
+  } catch {
+    return [];
+  }
+}
+
+function savePendingGuestbook(list) {
+  localStorage.setItem(GUEST_PENDING_KEY, JSON.stringify(list));
+}
+
+function renderGuestbookLists() {
+  const publishedRoot = document.querySelector('#guestbookList');
+  const pendingRoot = document.querySelector('#guestPendingList');
+  if (!publishedRoot || !pendingRoot) return;
+
+  const approved = guestbookState.published
+    .filter((item) => item.status !== 'hidden')
+    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+
+  if (!approved.length) {
+    publishedRoot.innerHTML = '<p class="empty">暂无公开留言，来写第一条吧。</p>';
+  } else {
+    publishedRoot.innerHTML = approved.map((item) => `
+      <article class="guest-item">
+        <p class="guest-meta"><span class="guest-author">${escapeHtml(item.name || '匿名访客')}</span> · ${escapeHtml(item.createdAt || '')}</p>
+        <p>${escapeHtml(item.content || '')}</p>
+      </article>
+    `).join('');
+  }
+
+  const pending = [...guestbookState.pending].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  if (!pending.length) {
+    pendingRoot.innerHTML = '<p class="empty">暂无待审核留言。</p>';
+  } else {
+    pendingRoot.innerHTML = pending.map((item) => `
+      <article class="guest-item">
+        <p class="guest-meta"><span class="guest-author">${escapeHtml(item.name || '匿名访客')}</span> · ${escapeHtml(item.createdAt || '')} · 待审核</p>
+        <p>${escapeHtml(item.content || '')}</p>
+      </article>
+    `).join('');
+  }
+}
+
+function bindGuestbookInteractions() {
+  const form = document.querySelector('#guestbookForm');
+  const nameInput = document.querySelector('#guestName');
+  const messageInput = document.querySelector('#guestMessage');
+  const resetBtn = document.querySelector('#guestResetBtn');
+  const statusEl = document.querySelector('#guestFormStatus');
+  const modeInputs = document.querySelectorAll('input[name="guestMode"]');
+
+  if (!form || !nameInput || !messageInput || !statusEl || !modeInputs.length) return;
+
+  const refreshMode = () => {
+    const mode = document.querySelector('input[name="guestMode"]:checked')?.value || 'anonymous';
+    const isReal = mode === 'real';
+    nameInput.disabled = !isReal;
+    nameInput.placeholder = isReal ? '请输入你的称呼' : '匿名模式无需填写';
+    if (!isReal) nameInput.value = '';
+  };
+  modeInputs.forEach((input) => {
+    input.addEventListener('change', refreshMode);
+  });
+  refreshMode();
+
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const mode = document.querySelector('input[name="guestMode"]:checked')?.value || 'anonymous';
+    const name = mode === 'real' ? nameInput.value.trim() : '匿名访客';
+    const content = messageInput.value.trim();
+    const createdAt = new Date().toLocaleString('zh-CN', { hour12: false });
+
+    if (mode === 'real' && !name) {
+      statusEl.textContent = '实名留言请填写称呼。';
+      return;
+    }
+    if (!content) {
+      statusEl.textContent = '留言内容不能为空。';
+      return;
+    }
+
+    const next = {
+      id: `pending_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      mode,
+      name,
+      content,
+      createdAt,
+      status: 'pending'
+    };
+
+    guestbookState.pending.unshift(next);
+    savePendingGuestbook(guestbookState.pending);
+    renderGuestbookLists();
+    messageInput.value = '';
+    if (mode === 'real') nameInput.value = '';
+    statusEl.textContent = '留言已提交到本机待审核列表，站长审核后会出现在公开留言中。';
+  });
+
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      messageInput.value = '';
+      nameInput.value = '';
+      statusEl.textContent = '已清空输入内容。';
+    });
+  }
 }
 
 function getFilteredArticles() {
@@ -369,7 +508,7 @@ function initWidgets() {
   }
 }
 
-const revealSeq = ['.hero', '.widgets', '#projects', '#about', '#timeline', '#articles', '.footer'];
+const revealSeq = ['.hero', '.widgets', '#projects', '#about', '#timeline', '#articles', '#guestbook', '.footer'];
 revealSeq.forEach((selector, i) => {
   const el = document.querySelector(selector);
   if (!el) return;
@@ -397,13 +536,17 @@ window.addEventListener('keydown', (event) => {
 
 (async function init() {
   try {
-    const [articles, siteConfig] = await Promise.all([loadArticles(), loadSiteConfig()]);
+    const [articles, siteConfig, guestbook] = await Promise.all([loadArticles(), loadSiteConfig(), loadGuestbook()]);
 
     state.allPublished = articles
       .filter((item) => item.status === 'published')
       .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
 
     applySiteConfig(siteConfig);
+    guestbookState.published = guestbook;
+    guestbookState.pending = loadPendingGuestbook();
+    bindGuestbookInteractions();
+    renderGuestbookLists();
     renderTagFilters();
     bindArticleInteractions();
     state.loading = false;
@@ -414,6 +557,10 @@ window.addEventListener('keydown', (event) => {
   } catch (err) {
     state.loading = false;
     state.error = '数据读取异常，请稍后刷新重试';
+    guestbookState.published = [];
+    guestbookState.pending = loadPendingGuestbook();
+    bindGuestbookInteractions();
+    renderGuestbookLists();
     renderArticles();
     setSystemStatus('DEGRADED', true);
   }

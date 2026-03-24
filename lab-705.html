@@ -3,173 +3,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lab 705</title>
+  <title>Lab 705 · 管理入口</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./lab-705.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./admin-console.css" />
 </head>
 <body>
-  <main class="lab-page">
-    <section id="gate" class="panel gate">
-      <h1>Access Required</h1>
-      <p>请输入访问密码后继续。</p>
-      <input id="gatePassword" type="password" placeholder="Password" />
-      <button id="gateEnter" class="btn primary" type="button">进入</button>
-      <p id="gateMsg" class="tip"></p>
+  <div class="circuit-overlay" aria-hidden="true"></div>
+  <div class="noise-overlay" aria-hidden="true"></div>
+
+  <main class="page">
+    <section id="gate" class="hero-shell">
+      <div class="hero-core">
+        <p class="chip-mark">LAB-705.ACCESS.GATE</p>
+        <h1>网站管理入口</h1>
+        <p class="lead">输入管理密码后，进入分离的文章管理与页面管理通道。</p>
+        <div class="form-grid">
+          <input id="gatePassword" type="password" placeholder="Password" />
+          <div class="form-actions">
+            <button id="gateEnter" class="btn btn-primary" type="button">进入管理台</button>
+            <a class="btn btn-ghost" href="./index.html">返回首页</a>
+          </div>
+          <p id="gateMsg" class="tip"></p>
+        </div>
+      </div>
     </section>
 
     <section id="app" class="hidden">
-      <header class="head panel">
-        <h1>文章管理通道</h1>
-        <a href="./index.html">返回首页</a>
-      </header>
-
-      <section class="panel">
-        <h2 id="formTitle">新建文章</h2>
-        <form id="articleForm" class="form">
-          <input type="hidden" id="articleId" />
-
-          <label for="title">标题</label>
-          <input id="title" required maxlength="100" />
-
-          <label for="summary">摘要</label>
-          <textarea id="summary" rows="2" maxlength="240"></textarea>
-
-          <label for="content">正文</label>
-          <textarea id="content" rows="8" required></textarea>
-
-          <label for="cover">封面图 URL</label>
-          <input id="cover" placeholder="https://..." />
-
-          <label for="tags">标签（英文逗号分隔）</label>
-          <input id="tags" placeholder="C语言, STM32" />
-
-          <label for="date">日期</label>
-          <input id="date" type="date" required />
-
-          <label for="status">状态</label>
-          <select id="status">
-            <option value="draft">草稿</option>
-            <option value="published">发布</option>
-          </select>
-
-          <div class="form-actions">
-            <button type="submit" class="btn primary">保存到当前会话</button>
-            <button type="button" id="resetBtn" class="btn ghost">清空</button>
-          </div>
-        </form>
-      </section>
-
-      <section class="panel">
-        <h2>页面内容配置</h2>
-        <p class="tip">默认会显示当前线上内容；你只改需要改的项，留空会自动保持原值不变。</p>
-        <div class="form">
-          <label for="projectTitle1">作品卡片 1 标题</label>
-          <input id="projectTitle1" />
-          <label for="projectDesc1">作品卡片 1 描述</label>
-          <textarea id="projectDesc1" rows="2"></textarea>
-
-          <label for="projectTitle2">作品卡片 2 标题</label>
-          <input id="projectTitle2" />
-          <label for="projectDesc2">作品卡片 2 描述</label>
-          <textarea id="projectDesc2" rows="2"></textarea>
-
-          <label for="projectTitle3">作品卡片 3 标题</label>
-          <input id="projectTitle3" />
-          <label for="projectDesc3">作品卡片 3 描述</label>
-          <textarea id="projectDesc3" rows="2"></textarea>
-
-          <label for="aboutTitle">关于我标题</label>
-          <input id="aboutTitle" />
-          <label for="aboutText1">关于我段落 1</label>
-          <textarea id="aboutText1" rows="2"></textarea>
-          <label for="aboutText2">关于我段落 2</label>
-          <textarea id="aboutText2" rows="2"></textarea>
-
-          <label for="timelineTitle">学习总线标题</label>
-          <input id="timelineTitle" />
-          <label for="timelineItem1">学习总线 1（格式：BUS-1|内容）</label>
-          <input id="timelineItem1" />
-          <label for="timelineItem2">学习总线 2（格式：BUS-2|内容）</label>
-          <input id="timelineItem2" />
-          <label for="timelineItem3">学习总线 3（格式：BUS-3|内容）</label>
-          <input id="timelineItem3" />
-          <div class="form-actions">
-            <button type="button" id="refreshPreviewBtn" class="btn ghost">刷新预览</button>
-            <button type="button" id="reloadConfigBtn" class="btn ghost">重新载入当前线上内容</button>
-          </div>
+      <section class="hero-shell">
+        <nav class="bus-nav" aria-label="管理导航">
+          <a class="bus-item" href="./index.html"><span>00</span> 首页</a>
+          <a class="bus-item" href="./lab-705.html"><span>01</span> 管理入口</a>
+          <a class="bus-item" href="./article-admin.html"><span>02</span> 文章管理</a>
+          <a class="bus-item" href="./page-admin.html"><span>03</span> 页面管理</a>
+          <a class="bus-item" href="./guestbook-admin.html"><span>04</span> 留言管理</a>
+        </nav>
+        <div class="hero-core">
+          <p class="chip-mark">MANAGEMENT.PORTAL.ROUTER</p>
+          <h1>请选择管理模块</h1>
+          <p class="lead">文章和页面配置已拆分为两个独立页面，避免互相影响。</p>
         </div>
       </section>
 
       <section class="panel">
-        <h2>实时预览（未发布）</h2>
-        <div class="preview-grid">
-          <article class="preview-card">
-            <h3 id="pvProjectTitle1">-</h3>
-            <p id="pvProjectDesc1">-</p>
+        <h2>管理模块</h2>
+        <div class="portal-grid">
+          <article class="portal-card">
+            <h3>文章管理</h3>
+            <p>新建、修改、删除、上下线文章，单独发布 <code>articles.json</code>。</p>
+            <div class="form-actions">
+              <a class="btn btn-primary" href="./article-admin.html">进入文章管理</a>
+            </div>
           </article>
-          <article class="preview-card">
-            <h3 id="pvProjectTitle2">-</h3>
-            <p id="pvProjectDesc2">-</p>
+          <article class="portal-card">
+            <h3>页面管理</h3>
+            <p>修改首页作品卡片、关于我、学习总线文案，单独发布 <code>site-config.json</code>。</p>
+            <div class="form-actions">
+              <a class="btn btn-primary" href="./page-admin.html">进入页面管理</a>
+            </div>
           </article>
-          <article class="preview-card">
-            <h3 id="pvProjectTitle3">-</h3>
-            <p id="pvProjectDesc3">-</p>
+          <article class="portal-card">
+            <h3>留言管理</h3>
+            <p>审核、编辑、删除访客留言，单独发布 <code>guestbook.json</code>。</p>
+            <div class="form-actions">
+              <a class="btn btn-primary" href="./guestbook-admin.html">进入留言管理</a>
+            </div>
           </article>
         </div>
-        <article class="preview-panel">
-          <h3 id="pvAboutTitle">-</h3>
-          <p id="pvAboutText1">-</p>
-          <p id="pvAboutText2">-</p>
-        </article>
-        <article class="preview-panel">
-          <h3 id="pvTimelineTitle">-</h3>
-          <ul class="preview-list">
-            <li id="pvTimelineItem1">-</li>
-            <li id="pvTimelineItem2">-</li>
-            <li id="pvTimelineItem3">-</li>
-          </ul>
-        </article>
-      </section>
-
-      <section class="panel">
-        <h2>发布到 GitHub</h2>
-        <p class="tip">会更新仓库中的 <code>articles.json</code> 和 <code>site-config.json</code>，别人访问网站就能看到。</p>
-        <div class="form">
-          <label for="owner">GitHub 用户名</label>
-          <input id="owner" value="EneriCdl" />
-
-          <label for="repo">仓库名</label>
-          <input id="repo" value="EneriCdl.github.io" />
-
-          <label for="branch">分支</label>
-          <input id="branch" value="main" />
-
-          <label for="token">GitHub Token（不会保存）</label>
-          <input id="token" type="password" placeholder="需要 Contents: Read and write" />
-          <label class="inline-check">
-            <input id="rememberToken" type="checkbox" checked />
-            <span>记住 Token（当前浏览器）</span>
-          </label>
-
-          <div class="form-actions">
-            <button type="button" id="publishBtn" class="btn primary">发布到 GitHub</button>
-            <button type="button" id="downloadBtn" class="btn ghost">下载文章 JSON</button>
-            <button type="button" id="downloadConfigBtn" class="btn ghost">下载页面配置 JSON</button>
-            <button type="button" id="clearTokenBtn" class="btn ghost">清除已记住 Token</button>
-          </div>
-          <p id="publishStatus" class="tip"></p>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2>文章列表</h2>
-        <div id="manageList" class="manage-list"></div>
       </section>
     </section>
   </main>
 
+  <script src="./admin-common.js"></script>
   <script src="./lab-705.js"></script>
 </body>
 </html>

@@ -37,7 +37,8 @@
 
 ## 隐藏管理通道（网页内）
 - 首页直接输入按键序列：`d` `s` `x` `x`
-- 会跳转到：`/lab-705.html`
+- 会跳转到：`/lab-705.html`（管理入口页）
 - 输入管理密码：`dsxx705xzh`
-- 可在页面内直接新建、编辑、删除并发布文章
-- 也可直接修改首页文案（作品卡片、关于我、学习总线）并一键发布
+- 文章管理：`/article-admin.html`（只管理并发布 `articles.json`）
+- 页面管理：`/page-admin.html`（只管理并发布 `site-config.json`）
+- 留言管理：`/guestbook-admin.html`（审核并发布 `guestbook.json`）

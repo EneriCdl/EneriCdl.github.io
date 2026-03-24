@@ -1,0 +1,126 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lab 705 · 留言管理</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./admin-console.css" />
+</head>
+<body>
+  <div class="circuit-overlay" aria-hidden="true"></div>
+  <div class="noise-overlay" aria-hidden="true"></div>
+
+  <main class="page">
+    <section id="gate" class="hero-shell">
+      <div class="hero-core">
+        <p class="chip-mark">LAB-705.ACCESS.GATE</p>
+        <h1>留言管理通道</h1>
+        <p class="lead">输入管理密码后继续。</p>
+        <div class="form-grid">
+          <input id="gatePassword" type="password" placeholder="Password" />
+          <div class="form-actions">
+            <button id="gateEnter" class="btn btn-primary" type="button">进入留言管理</button>
+            <a class="btn btn-ghost" href="./lab-705.html">返回管理入口</a>
+          </div>
+          <p id="gateMsg" class="tip"></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="app" class="hidden">
+      <section class="hero-shell">
+        <nav class="bus-nav" aria-label="管理导航">
+          <a class="bus-item" href="./index.html"><span>00</span> 首页</a>
+          <a class="bus-item" href="./lab-705.html"><span>01</span> 管理入口</a>
+          <a class="bus-item" href="./article-admin.html"><span>02</span> 文章管理</a>
+          <a class="bus-item" href="./page-admin.html"><span>03</span> 页面管理</a>
+          <a class="bus-item" href="./guestbook-admin.html"><span>04</span> 留言管理</a>
+        </nav>
+        <div class="hero-core">
+          <p class="chip-mark">GUESTBOOK.MANAGER.CONSOLE</p>
+          <h1>访客留言管理</h1>
+          <p class="lead">审核、修改、删除公开留言，并发布 <code>guestbook.json</code>。</p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2 id="formTitle">新建留言</h2>
+          <p class="tip">可匿名也可实名，默认公开状态。</p>
+        </div>
+        <form id="guestForm" class="form-grid">
+          <input id="guestId" type="hidden" />
+
+          <label for="guestMode">身份类型</label>
+          <select id="guestMode">
+            <option value="anonymous">匿名</option>
+            <option value="real">实名</option>
+          </select>
+
+          <label for="guestName">显示名称</label>
+          <input id="guestName" placeholder="匿名访客 / 某某同学" maxlength="40" />
+
+          <label for="guestContent">留言内容</label>
+          <textarea id="guestContent" rows="4" maxlength="300"></textarea>
+
+          <label for="guestCreatedAt">时间</label>
+          <input id="guestCreatedAt" placeholder="2026-03-24 12:00:00" />
+
+          <label for="guestStatus">状态</label>
+          <select id="guestStatus">
+            <option value="approved">公开</option>
+            <option value="hidden">隐藏</option>
+          </select>
+
+          <div class="form-actions">
+            <button type="submit" id="saveGuestBtn" class="btn btn-primary">保存到当前会话</button>
+            <button type="button" id="resetGuestBtn" class="btn btn-ghost">清空</button>
+          </div>
+          <p id="formStatus" class="tip"></p>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>发布到 GitHub</h2>
+        <p class="tip">仅更新 <code>guestbook.json</code></p>
+        <div class="form-grid">
+          <label for="owner">GitHub 用户名</label>
+          <input id="owner" value="EneriCdl" />
+
+          <label for="repo">仓库名</label>
+          <input id="repo" value="EneriCdl.github.io" />
+
+          <label for="branch">分支</label>
+          <input id="branch" value="main" />
+
+          <label for="token">GitHub Token（需要 Contents: Read and write）</label>
+          <input id="token" type="password" placeholder="ghp_xxx" />
+          <label class="inline-check">
+            <input id="rememberToken" type="checkbox" checked />
+            <span>记住 Token（当前浏览器）</span>
+          </label>
+
+          <div class="form-actions">
+            <button type="button" id="publishBtn" class="btn btn-primary">发布 guestbook.json</button>
+            <button type="button" id="downloadBtn" class="btn btn-ghost">下载 guestbook.json</button>
+            <button type="button" id="reloadBtn" class="btn btn-ghost">重新载入线上留言</button>
+            <button type="button" id="clearTokenBtn" class="btn btn-ghost">清除已记住 Token</button>
+          </div>
+          <p id="publishStatus" class="tip"></p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>留言列表</h2>
+        <div id="manageList" class="manage-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="./admin-common.js"></script>
+  <script src="./guestbook-admin.js"></script>
+</body>
+</html>
